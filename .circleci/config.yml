@@ -19,7 +19,7 @@ jobs:
           command: >
             oc new-project localclustertestproject
 
-            oc new-build https://github.com/bcgov/cas-postgres.git#develop --strategy=docker
+            oc apply -f openshift/buildconfig/cas-postgres.yml
 
             oc start-build cas-postgres --follow
 
