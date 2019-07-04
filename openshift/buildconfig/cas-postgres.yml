@@ -27,8 +27,5 @@ spec:
     type: Git
   strategy:
     dockerStrategy:
-      from:
-        kind: ImageStreamTag
-        name: 's2i-core:latest'
-    type: Docker
+      noCache: true
   successfulBuildsHistoryLimit: 5
