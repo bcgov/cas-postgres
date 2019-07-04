@@ -19,10 +19,13 @@ jobs:
           command: >
             oc new-project localclustertestproject
 
+            oc new-build https://github.com/bcgov/cas-postgres.git#develop --strategy=docker
+            oc start-build cas-postgres --follow --wait
+
             oc new-app
             centos/ruby-25-centos7~https://github.com/sclorg/ruby-ex.git
 
-            kubectl get services
+            oc get bc
           name: Test the cluster
 
 workflows:
