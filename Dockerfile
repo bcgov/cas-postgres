@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi8/s2i-core
+FROM registry.access.redhat.com/ubi8/s2i-core
 
 # PostgreSQL image for OpenShift.
 # Volumes:
