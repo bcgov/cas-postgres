@@ -53,7 +53,7 @@ COPY root/usr/libexec/fix-permissions /usr/libexec/fix-permissions
 # repoquery --list readline
 ENV PATH /opt/app-root/src/bin:/opt/app-root/bin:/usr/local/pgsql/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-RUN INSTALL_PKGS="make gcc vim-common kernel-headers zlib-devel libcurl-devel git perl patch" && \
+RUN INSTALL_PKGS="make gcc vim-common kernel-headers zlib-devel libcurl-devel git perl patch autoconf automake" && \
     yum update -y --disableplugin=subscription-manager && \
     yum install -y $INSTALL_PKGS && \
     rpm -V $INSTALL_PKGS && \
