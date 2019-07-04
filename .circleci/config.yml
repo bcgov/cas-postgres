@@ -21,7 +21,7 @@ jobs:
 
             oc new-build https://github.com/bcgov/cas-postgres.git#develop --strategy=docker
 
-            oc start-build cas-postgres --follow --wait
+            oc start-build cas-postgres --follow
 
             oc get bc
           name: Test the cluster
