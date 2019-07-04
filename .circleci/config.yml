@@ -24,5 +24,8 @@ jobs:
 
             kubectl get services
           name: Test the cluster
+
+workflows:
   build:
-    - make build
+    jobs:
+      - make build
