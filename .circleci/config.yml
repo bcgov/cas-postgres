@@ -26,6 +26,6 @@ jobs:
           name: Test the cluster
 
 workflows:
-  build:
+  deployment:
     jobs:
-      - make build
+      - create-local-cluster
