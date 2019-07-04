@@ -24,3 +24,5 @@ jobs:
 
             kubectl get services
           name: Test the cluster
+  build:
+    - make build
