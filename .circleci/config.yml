@@ -7,6 +7,7 @@ jobs:
   create-local-cluster:
     executor: redhat-openshift/machine-for-local-cluster
     steps:
+      - checkout
       - redhat-openshift/create-local-cluster-with-oc:
           skip-registry-check: true
       - redhat-openshift/login-and-update-kubeconfig:
