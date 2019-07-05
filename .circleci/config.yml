@@ -24,6 +24,8 @@ jobs:
 
             oc start-build cas-postgres --follow
 
+            oc logs build/cas-postgres-1
+
             oc get bc
           name: Test the cluster
 
