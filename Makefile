@@ -7,8 +7,7 @@ configure:
 
 .PHONY: build
 build:
-	oc start-build cas-postgres --wait
-	oc logs build/cas-postgres-1
+	oc start-build cas-postgres --follow
 
 .PHONY: docker_build
 docker_build:
