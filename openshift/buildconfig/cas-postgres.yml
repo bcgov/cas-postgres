@@ -10,8 +10,6 @@ spec:
     to:
       kind: ImageStreamTag
       name: 'cas-postgres:latest'
-  postCommit:
-    script: 'psql -c "select true"'
   resources:
     limits:
       cpu: '1'

@@ -20,13 +20,12 @@ jobs:
           command: >
             oc new-project localclustertestproject
 
+            oc apply -f openshift/imagestream/cas-postgres.yml
             oc apply -f openshift/buildconfig/cas-postgres.yml
 
-            oc start-build cas-postgres --follow
+            oc start-build cas-postgres --wait
 
             oc logs build/cas-postgres-1
-
-            oc get bc
           name: Test the cluster
 
 workflows:
