@@ -15,3 +15,5 @@ objects:
   spec:
     lookupPolicy:
       local: true
+    tags:
+      - name: ${GIT_SHA1}
