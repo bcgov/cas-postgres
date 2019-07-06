@@ -4,7 +4,7 @@ orbs:
   redhat-openshift: circleci/redhat-openshift@0.1.0
 
 jobs:
-  create-local-cluster:
+  test-local-cluster:
     executor: redhat-openshift/machine-for-local-cluster
     steps:
       - checkout
@@ -26,30 +26,18 @@ jobs:
 
             oc new-project wksv3k-prod
           name: Create the cluster project set
-  build:
-    executor: redhat-openshift/machine-for-local-cluster
-    steps:
       - run:
           command: make configure
           name: Configure the cluster
       - run:
           command: make build
           name: Build image on the cluster
-  deploy-test:
-    executor: redhat-openshift/machine-for-local-cluster
-    steps:
       - run:
           command: make deploy_test
           name: Deploy to test
-  deploy-dev:
-    executor: redhat-openshift/machine-for-local-cluster
-    steps:
       - run:
           command: make deploy_test
           name: Deploy to dev
-  deploy-prod:
-    executor: redhat-openshift/machine-for-local-cluster
-    steps:
       - run:
           command: make deploy_test
           name: Deploy to prod
@@ -57,16 +45,4 @@ jobs:
 workflows:
   deployment:
     jobs:
-      - create-local-cluster
-      - build:
-          requires:
-            - create-local-cluster
-      - deploy-test:
-          requires:
-            - build
-      - deploy-dev:
-          requires:
-            - build
-      - deploy-prod:
-          requires:
-            - build
+      - test-local-cluster
