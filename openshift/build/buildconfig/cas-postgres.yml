@@ -1,0 +1,39 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+
+parameters:
+- description: SHA1 of git revision to be deployed.
+  displayName: Git SHA1
+  name: GIT_SHA1
+  required: true
+
+objects:
+- apiVersion: build.openshift.io/v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      build: cas-postgres
+    name: cas-postgres
+  spec:
+    failedBuildsHistoryLimit: 5
+    output:
+      to:
+        kind: ImageStreamTag
+        name: 'cas-postgres:${GIT_SHA1}'
+    resources:
+      limits:
+        cpu: '1'
+        memory: 512Mi
+      requests:
+        cpu: 750m
+        memory: 256Mi
+    runPolicy: Parallel
+    source:
+      git:
+        ref: ${GIT_SHA1}
+        uri: 'https://github.com/bcgov/cas-postgres.git'
+      type: Git
+    strategy:
+      dockerStrategy:
+        noCache: true
+    successfulBuildsHistoryLimit: 5
