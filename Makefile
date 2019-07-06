@@ -25,26 +25,39 @@ define oc_apply
 	@@$(OC) process -f openshift/$(1).yml $(2) | $(OC) apply --wait=true --overwrite=true -f-
 endef
 
+define oc_configure
+	$(call oc_apply,build/imagestream/$(1),GIT_SHA1=$(GIT_SHA1))
+	$(call oc_apply,build/buildconfig/$(1),GIT_SHA1=$(GIT_SHA1))
+endef
+
+define oc_build
+	@@echo ✓ building $(1)
+	@@$(OC) start-build $(1) --follow
+	@@echo ✓ tagging $(GIT_BRANCH_NORM)@$(GIT_SHA1)
+	@@$(OC) tag $(1):$(GIT_SHA1) $(1):$(GIT_BRANCH_NORM)
+endef
+
+define oc_promote
+	@@$(OC) tag $(OC_TOOLS_PROJECT)/$(1):$(2) $(1):$(2) --reference-policy=local
+endef
+
 .PHONY: configure
 configure: OC_PROJECT=$(OC_TOOLS_PROJECT)
 configure:
 	$(call switch_project)
-	$(call oc_apply,build/imagestream/cas-postgres,GIT_SHA1=$(GIT_SHA1))
-	$(call oc_apply,build/buildconfig/cas-postgres,GIT_SHA1=$(GIT_SHA1))
+	$(call oc_configure,cas-postgres)
 
 .PHONY: build
 build: OC_PROJECT=$(OC_TOOLS_PROJECT)
 build:
 	$(call switch_project)
-	@@echo ✓ building cas-postgres
-	@@$(OC) start-build cas-postgres --follow
-	@@$(OC) tag cas-postgres:$(GIT_SHA1) cas-postgres:$(GIT_BRANCH_NORM)
+	$(call oc_build,cas-postgres)
 
 .PHONY: deploy
 deploy:
 deploy:
 	$(call switch_project)
-	@@$(OC) tag $(OC_TOOLS_PROJECT)/cas-postgres:$(GIT_SHA1) cas-postgres:$(GIT_SHA1) --reference-policy=local
+	$(call oc_promote,cas-postgres)
 
 .PHONY: deploy_test
 deploy_test: OC_PROJECT=$(OC_TEST_PROJECT)
