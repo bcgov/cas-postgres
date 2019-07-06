@@ -12,8 +12,8 @@ objects:
   kind: ImageStream
   metadata:
     name: cas-postgres
+    annotations:
+      openshift.io/image.insecureRepository: "true"
   spec:
     lookupPolicy:
       local: true
-    tags:
-      - name: ${GIT_SHA1}
