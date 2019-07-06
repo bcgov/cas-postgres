@@ -58,7 +58,15 @@ workflows:
   deployment:
     jobs:
       - create-local-cluster
-      - build
-      - deploy-test
-      - deploy-dev
-      - deploy-prod
+      - build:
+          requires:
+            - create-local-cluster
+      - deploy-test:
+          requires:
+            - build
+      - deploy-dev:
+          requires:
+            - build
+      - deploy-prod:
+          requires:
+            - build
