@@ -8,6 +8,9 @@ jobs:
     executor: redhat-openshift/machine-for-local-cluster
     steps:
       - checkout
+      - run:
+          command: docker login -u "$RED_HAT_DOCKER_USERNAME" -p "$RED_HAT_DOCKER_PASSWORD" "$RED_HAT_DOCKER_SERVER"
+          name: Log in to Red Hat docker registry
       - redhat-openshift/create-local-cluster-with-oc:
           skip-registry-check: true
       - redhat-openshift/login-and-update-kubeconfig:
