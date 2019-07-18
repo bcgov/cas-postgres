@@ -6,7 +6,7 @@ GIT_BRANCH=$(shell $(GIT) rev-parse --abbrev-ref HEAD)
 GIT_BRANCH_NORM=$(subst /,-,$(GIT_BRANCH)) # openshift doesn't like slashes 
 
 OC=$(shell which oc)
-OC_PROJECT=$(shell echo "$${OC_PROJECT}")
+OC_PROJECT=$(shell echo "$${ENVIRONMENT:-$${OC_PROJECT}}")
 OC_TOOLS_PROJECT=wksv3k-tools
 OC_TEST_PROJECT=wksv3k-test
 OC_DEV_PROJECT=wksv3k-dev
