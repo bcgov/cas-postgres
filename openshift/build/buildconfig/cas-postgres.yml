@@ -12,7 +12,7 @@ objects:
   kind: BuildConfig
   metadata:
     labels:
-      build: cas-postgres
+      beta.kubernetes.io/os: linux
     name: cas-postgres
   spec:
     failedBuildsHistoryLimit: 5
