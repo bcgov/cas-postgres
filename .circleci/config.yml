@@ -55,4 +55,6 @@ workflows:
   test:
     jobs:
       - lint
-      - test-local-cluster
+      - test-local-cluster:
+          requires:
+            - lint
