@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  redhat-openshift: wenzowski/redhat-openshift@dev:alpha
+  redhat-openshift: circleci/redhat-openshift@0.2.0
 
 jobs:
   test-local-cluster:
