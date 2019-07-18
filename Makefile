@@ -54,7 +54,8 @@ define oc_build
 endef
 
 define oc_promote
-	@@$(OC) tag $(OC_TOOLS_PROJECT)/$(1):$(2) $(1):$(2) --reference-policy=local
+	@@$(OC) -n $(OC_PROJECT) tag $(OC_TOOLS_PROJECT)/$(1):$(GIT_SHA1) $(1):$(GIT_SHA1) --reference-policy=local
+	@@$(OC) -n $(OC_PROJECT) tag $(1):$(GIT_SHA1) $(1):latest --reference-policy=local
 endef
 
 .PHONY: lint
