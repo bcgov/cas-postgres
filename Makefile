@@ -77,7 +77,6 @@ build:
 
 .PHONY: deploy
 deploy:
-deploy:
 	$(call switch_project)
 	$(call oc_promote,cas-postgres)
 
