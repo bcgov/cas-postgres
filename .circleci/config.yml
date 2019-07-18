@@ -52,7 +52,7 @@ jobs:
           name: Lint the openshift yaml
 
 workflows:
-  deployment:
+  test:
     jobs:
       - lint
       - test-local-cluster

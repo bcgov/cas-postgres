@@ -58,9 +58,7 @@ define oc_promote
 endef
 
 .PHONY: lint
-lint: OC_PROJECT=$(OC_TOOLS_PROJECT)
 lint:
-	$(call switch_project)
 	$(call oc_lint,cas-postgres)
 
 .PHONY: configure
