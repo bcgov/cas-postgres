@@ -38,6 +38,8 @@ objects:
     strategy:
       dockerStrategy:
         noCache: true
+        pullSecret:
+          name: io-redhat-registry
       type: Docker
     successfulBuildsHistoryLimit: 5
     triggers: []
