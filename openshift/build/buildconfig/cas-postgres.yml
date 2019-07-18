@@ -16,6 +16,8 @@ objects:
     name: cas-postgres
   spec:
     failedBuildsHistoryLimit: 5
+    nodeSelector:
+      zone: default
     output:
       to:
         kind: ImageStreamTag
@@ -36,4 +38,8 @@ objects:
     strategy:
       dockerStrategy:
         noCache: true
+      type: Docker
     successfulBuildsHistoryLimit: 5
+    triggers: []
+  status:
+    lastVersion: 0

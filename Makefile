@@ -26,8 +26,19 @@ define switch_project
 	@@echo ✓ switched project to: $(OC_PROJECT)
 endef
 
+define oc_validate
+	@@echo ✓ validating $(1).yml
+	@@$(OC) process -f openshift/$(1).yml --local $(2) | $(OC) -n "$(OC_PROJECT)" apply --dry-run --validate -f- >/dev/null
+endef
+
+define oc_lint
+	$(call oc_validate,build/imagestream/$(1),GIT_SHA1=$(GIT_SHA1))
+	$(call oc_validate,build/buildconfig/$(1),GIT_SHA1=$(GIT_SHA1))
+endef
+
 define oc_apply
-	@@$(OC) process -f openshift/$(1).yml $(2) | $(OC) apply --wait=true --overwrite=true -f-
+	@@echo ✓ applying $(1).yml
+	@@$(OC) process -f openshift/$(1).yml $(2) | $(OC) -n "$(OC_PROJECT)" apply --wait --overwrite --validate -f-
 endef
 
 define oc_configure
@@ -45,6 +56,12 @@ endef
 define oc_promote
 	@@$(OC) tag $(OC_TOOLS_PROJECT)/$(1):$(2) $(1):$(2) --reference-policy=local
 endef
+
+.PHONY: lint
+lint: OC_PROJECT=$(OC_TOOLS_PROJECT)
+lint:
+	$(call switch_project)
+	$(call oc_lint,cas-postgres)
 
 .PHONY: configure
 configure: OC_PROJECT=$(OC_TOOLS_PROJECT)
