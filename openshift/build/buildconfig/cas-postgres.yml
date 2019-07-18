@@ -17,7 +17,7 @@ objects:
   spec:
     failedBuildsHistoryLimit: 5
     nodeSelector:
-      zone: default
+      beta.kubernetes.io/os: linux
     output:
       to:
         kind: ImageStreamTag
