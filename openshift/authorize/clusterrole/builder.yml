@@ -1,0 +1,33 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+
+parameters:
+- description: Prefix to prepend to object name.
+  displayName: Prefix
+  name: PREFIX
+  required: true
+- description: SHA1 of git revision to be deployed.
+  displayName: Git SHA1
+  name: GIT_SHA1
+  required: true
+
+objects:
+- apiVersion: authorization.openshift.io/v1
+  kind: ClusterRole
+  metadata:
+    name: ${PREFIX}builder
+  rules:
+  - apiGroups:
+    - build.openshift.io
+    resources:
+    - buildconfigs
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - build.openshift.io
+    resources:
+    - buildconfigs/instantiate
+    verbs:
+    - create

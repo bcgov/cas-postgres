@@ -1,9 +1,13 @@
+PREFIX="cas-"
+
 TEST=$(shell which test)
 
 GIT=$(shell which git)
 GIT_SHA1=$(shell echo "$${CIRCLE_SHA1:-`$(GIT) rev-parse HEAD`}")
 GIT_BRANCH=$(shell $(GIT) rev-parse --abbrev-ref HEAD)
 GIT_BRANCH_NORM=$(subst /,-,$(GIT_BRANCH)) # openshift doesn't like slashes 
+
+FIND=$(shell which find)
 
 OC=$(shell which oc)
 OC_PROJECT=$(shell echo "$${ENVIRONMENT:-$${OC_PROJECT}}")
@@ -13,6 +17,7 @@ OC_DEV_PROJECT=wksv3k-dev
 OC_PROD_PROJECT=wksv3k-prod
 OC_REGISTRY=docker-registry.default.svc:5000
 OC_REGISTRY_EXT=docker-registry.pathfinder.gov.bc.ca
+OC_TEMPLATE_VARS=PREFIX=$(PREFIX) GIT_SHA1=$(GIT_SHA1)
 
 RED_HAT_DOCKER_SERVER=$(shell echo "$$RED_HAT_DOCKER_SERVER")
 RED_HAT_DOCKER_USERNAME=$(shell echo "$$RED_HAT_DOCKER_USERNAME")
@@ -21,29 +26,33 @@ RED_HAT_DOCKER_EMAIL=$(shell echo "$$RED_HAT_DOCKER_EMAIL")
 
 define switch_project
 	@@echo ✓ logged in as: $(shell $(OC) whoami)
-	@@$(TEST) $(OC_PROJECT)
+	@@$(TEST) $(OC_PROJECT) # ensure OC_PROJECT is defined
 	@@$(OC) project $(OC_PROJECT) >/dev/null
 	@@echo ✓ switched project to: $(OC_PROJECT)
 endef
 
 define oc_validate
-	@@echo ✓ validating $(1).yml
-	@@$(OC) process -f openshift/$(1).yml --local $(2) | $(OC) -n "$(OC_PROJECT)" apply --dry-run --validate -f- >/dev/null
+	$(OC) process -f $(1) --local $(2) \
+		| $(OC) -n "$(OC_PROJECT)" apply --dry-run --validate -f- >/dev/null \
+		&& echo ✓ $(1) is valid \
+		|| (echo ✘ $(1) is invalid && exit 1)
 endef
 
 define oc_lint
-	$(call oc_validate,build/imagestream/$(1),GIT_SHA1=$(GIT_SHA1))
-	$(call oc_validate,build/buildconfig/$(1),GIT_SHA1=$(GIT_SHA1))
+	@@for FILE in $(shell $(FIND) openshift -name \*.yml -print); \
+		do $(call oc_validate,$$FILE,$(OC_TEMPLATE_VARS)); \
+	done
 endef
 
 define oc_apply
-	@@echo ✓ applying $(1).yml
-	@@$(OC) process -f openshift/$(1).yml $(2) | $(OC) -n "$(OC_PROJECT)" apply --wait --overwrite --validate -f-
+	$(OC) process -f $(1) $(2) \
+		| $(OC) -n "$(OC_PROJECT)" apply --wait --overwrite --validate -f-
 endef
 
 define oc_configure
-	$(call oc_apply,build/imagestream/$(1),GIT_SHA1=$(GIT_SHA1))
-	$(call oc_apply,build/buildconfig/$(1),GIT_SHA1=$(GIT_SHA1))
+	@@for FILE in $(shell $(FIND) openshift/build -name \*.yml -print); \
+		do $(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS)); \
+	done
 endef
 
 define oc_build
@@ -58,27 +67,34 @@ define oc_promote
 	@@$(OC) -n $(OC_PROJECT) tag $(1):$(GIT_SHA1) $(1):latest --reference-policy=local
 endef
 
+define oc_provision
+	@@for FILE in $(shell $(FIND) openshift/deploy -name \*.yml -print); \
+		do $(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS)); \
+	done
+endef
+
 .PHONY: lint
 lint: OC_PROJECT=$(OC_TOOLS_PROJECT)
 lint:
-	$(call oc_lint,cas-postgres)
+	$(call switch_project)
+	$(call oc_lint)
 
 .PHONY: configure
 configure: OC_PROJECT=$(OC_TOOLS_PROJECT)
 configure:
 	$(call switch_project)
-	$(call oc_configure,cas-postgres)
+	$(call oc_configure)
 
 .PHONY: build
 build: OC_PROJECT=$(OC_TOOLS_PROJECT)
 build:
 	$(call switch_project)
-	$(call oc_build,cas-postgres)
+	$(call oc_build,$(PREFIX)postgres)
 
 .PHONY: deploy
 deploy:
 	$(call switch_project)
-	$(call oc_promote,cas-postgres)
+	$(call oc_promote,$(PREFIX)postgres)
 
 .PHONY: deploy_test
 deploy_test: OC_PROJECT=$(OC_TEST_PROJECT)
@@ -99,16 +115,20 @@ define oc_configure_credentials
 			--docker-server="$(RED_HAT_DOCKER_SERVER)" \
 			--docker-username="$(RED_HAT_DOCKER_USERNAME)" \
 			--docker-password="$(RED_HAT_DOCKER_PASSWORD)" \
-			--docker-email="$(RED_HAT_DOCKER_EMAIL)"; \
-		$(OC) -n "$(1)" secrets link default io-redhat-registry --for=pull; \
-		$(OC) -n "$(1)" secrets link builder io-redhat-registry; \
+			--docker-email="$(RED_HAT_DOCKER_EMAIL)" \
+			>/dev/null; \
+		$(OC) -n "$(1)" secret link default io-redhat-registry --for=pull; \
+		$(OC) -n "$(1)" secret link builder io-redhat-registry; \
 	fi
 endef
 
 define oc_new_project
-	@@if ! $(OC) get project $(1) >/dev/null; then $(OC) new-project $(1); fi
+	@@if ! $(OC) get project $(1) >/dev/null; then \
+		$(OC) new-project $(1) >/dev/null; \
+		@@echo "✓ oc new-project $(1)"; \
+	fi
 	$(call oc_configure_credentials,$(1))
-	@@echo "✓ oc new-project $(1)"
+	@@echo "✓ oc project $(1) exists"
 endef
 
 .PHONY: provision
@@ -117,3 +137,20 @@ provision:
 	$(call oc_new_project,$(OC_TEST_PROJECT))
 	$(call oc_new_project,$(OC_DEV_PROJECT))
 	$(call oc_new_project,$(OC_PROD_PROJECT))
+
+define oc_create
+	@@if ! $(OC) -n "$(1)" get $(2)/$(3) >/dev/null; then \
+		$(OC) -n "$(1)" create $(2) $(3) >/dev/null; \
+	fi;
+	@@echo "✓ oc create $(2)/$(3)"
+endef
+
+.PHONY: authorize
+authorize:
+	$(call oc_create,$(OC_TOOLS_PROJECT),serviceaccount,circleci)
+	$(OC) -n $(OC_TOOLS_PROJECT) policy add-role-to-user view system:serviceaccount:$(OC_TOOLS_PROJECT):circleci
+	$(OC) -n $(OC_TOOLS_PROJECT) policy add-role-to-user system:image-builder system:serviceaccount:$(OC_TOOLS_PROJECT):circleci
+
+# oc get clusterrole
+# oc describe clusterrole.rbac
+# ssh -L 8443:127.0.0.1:8443 -p 54782 35.229.72.44

@@ -2,6 +2,10 @@ apiVersion: template.openshift.io/v1
 kind: Template
 
 parameters:
+- description: Prefix to prepend to object name.
+  displayName: Prefix
+  name: PREFIX
+  required: true
 - description: SHA1 of git revision to be deployed.
   displayName: Git SHA1
   name: GIT_SHA1
@@ -13,7 +17,7 @@ objects:
   metadata:
     labels:
       beta.kubernetes.io/os: linux
-    name: cas-postgres
+    name: ${PREFIX}postgres
   spec:
     failedBuildsHistoryLimit: 5
     nodeSelector:
@@ -21,7 +25,7 @@ objects:
     output:
       to:
         kind: ImageStreamTag
-        name: 'cas-postgres:${GIT_SHA1}'
+        name: '${PREFIX}postgres:${GIT_SHA1}'
     resources:
       limits:
         cpu: '1'
