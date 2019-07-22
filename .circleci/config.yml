@@ -51,10 +51,26 @@ jobs:
           command: make lint
           name: Lint the openshift yaml
 
+  build:
+    executor: redhat-openshift/default
+    steps:
+      - checkout
+      - redhat-openshift/login-and-update-kubeconfig:
+          insecure-skip-tls-verify: true
+          openshift-platform-version: 3.x
+          server-address: $OC_SERVER_ADDRESS
+          token: $OC_TOKEN
+      - run:
+          command: make build
+          name: Build image on the remote cluster
+
 workflows:
   test:
     jobs:
       - lint
+      - build:
+          requires:
+            - lint
       - test-local-cluster:
           requires:
             - lint
