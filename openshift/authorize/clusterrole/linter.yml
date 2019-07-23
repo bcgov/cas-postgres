@@ -817,3 +817,10 @@ objects:
     - serviceplans
     verbs:
     - watch
+  - apiGroups:
+    - authorization.openshift.io
+    attributeRestrictions: null
+    resources:
+    - roles
+    verbs:
+    - get
