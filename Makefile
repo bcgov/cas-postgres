@@ -1,4 +1,4 @@
-PREFIX="cas-"
+PREFIX=cas-
 
 TEST=$(shell which test)
 
@@ -124,8 +124,8 @@ endef
 
 define oc_new_project
 	@@if ! $(OC) get project $(1) >/dev/null; then \
-		$(OC) new-project $(1) >/dev/null; \
-		@@echo "✓ oc new-project $(1)"; \
+		$(OC) new-project $(1) >/dev/null \
+		&& echo "✓ oc new-project $(1)"; \
 	fi
 	$(call oc_configure_credentials,$(1))
 	@@echo "✓ oc project $(1) exists"
@@ -146,10 +146,15 @@ define oc_create
 endef
 
 .PHONY: authorize
+authorize: OC_PROJECT=$(OC_TOOLS_PROJECT)
 authorize:
+	$(call switch_project)
+	@@for FILE in $(shell $(FIND) openshift/authorize/clusterrole -name \*.yml -print); \
+		do $(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS)); \
+	done
 	$(call oc_create,$(OC_TOOLS_PROJECT),serviceaccount,circleci)
-	$(OC) -n $(OC_TOOLS_PROJECT) policy add-role-to-user view system:serviceaccount:$(OC_TOOLS_PROJECT):circleci
-	$(OC) -n $(OC_TOOLS_PROJECT) policy add-role-to-user system:image-builder system:serviceaccount:$(OC_TOOLS_PROJECT):circleci
+	$(OC) -n $(OC_TOOLS_PROJECT) policy add-role-to-user $(PREFIX)linter system:serviceaccount:$(OC_TOOLS_PROJECT):circleci --role-namespace=$(OC_TOOLS_PROJECT)
+	$(OC) -n $(OC_TOOLS_PROJECT) policy add-role-to-user $(PREFIX)builder system:serviceaccount:$(OC_TOOLS_PROJECT):circleci --role-namespace=$(OC_TOOLS_PROJECT)
 
 # oc get clusterrole
 # oc describe clusterrole.rbac
