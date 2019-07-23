@@ -61,6 +61,9 @@ jobs:
           server-address: $OC_SERVER_ADDRESS
           token: $OC_TOKEN
       - run:
+          command: make configure
+          name: Configure imagestream to point at the current SHA1
+      - run:
           command: make build
           name: Build image on the remote cluster
 
