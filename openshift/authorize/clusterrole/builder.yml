@@ -13,8 +13,11 @@ parameters:
 
 objects:
 - apiVersion: authorization.openshift.io/v1
-  kind: ClusterRole
+  kind: Role
   metadata:
+    annotations:
+      openshift.io/description: A user who can trigger new builds but cannot delete them.
+      openshift.io/reconcile-protect: "false"
     name: ${PREFIX}builder
   rules:
   - apiGroups:
@@ -25,9 +28,32 @@ objects:
     - get
     - list
     - watch
+    - patch
   - apiGroups:
     - build.openshift.io
     resources:
     - buildconfigs/instantiate
     verbs:
     - create
+  - apiGroups:
+    - template.openshift.io
+    - ""
+    attributeRestrictions: null
+    resources:
+    - processedtemplates
+    - templateconfigs
+    - templateinstances
+    - templates
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+  - apiGroups:
+    - image.openshift.io
+    - ""
+    attributeRestrictions: null
+    resources:
+    - imagestreams
+    verbs:
+    - update
