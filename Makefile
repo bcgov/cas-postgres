@@ -4,7 +4,7 @@ TEST=$(shell which test)
 
 GIT=$(shell which git)
 GIT_SHA1=$(shell echo "$${CIRCLE_SHA1:-`$(GIT) rev-parse HEAD`}")
-GIT_BRANCH=$(shell $(GIT) rev-parse --abbrev-ref HEAD)
+GIT_BRANCH=$(strip $(shell $(GIT) rev-parse --abbrev-ref HEAD))
 GIT_BRANCH_NORM=$(subst /,-,$(GIT_BRANCH)) # openshift doesn't like slashes 
 
 FIND=$(shell which find)
@@ -58,7 +58,7 @@ endef
 define oc_build
 	@@echo ✓ building $(1)
 	@@$(OC) start-build $(1) --follow
-	@@echo ✓ tagging $(GIT_BRANCH_NORM)@$(GIT_SHA1)
+	@@echo ✓ tagging $(1):$(GIT_SHA1) to $(1):$(GIT_BRANCH_NORM)
 	@@$(OC) tag $(1):$(GIT_SHA1) $(1):$(GIT_BRANCH_NORM)
 endef
 
