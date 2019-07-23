@@ -819,6 +819,7 @@ objects:
     - watch
   - apiGroups:
     - authorization.openshift.io
+    - rbac.authorization.k8s.io
     attributeRestrictions: null
     resources:
     - roles
