@@ -46,12 +46,12 @@ endef
 
 define oc_apply
 	$(OC) process -f $(1) $(2) \
-		| $(OC) -n "$(OC_PROJECT)" apply --wait --overwrite --validate -f-
+		| $(OC) -n "$(3)" apply --wait --overwrite --validate -f-
 endef
 
 define oc_configure
 	@@for FILE in $(shell $(FIND) openshift/build -name \*.yml -print); \
-		do $(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS)); \
+		do $(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS),$(OC_PROJECT)); \
 	done
 endef
 
@@ -69,7 +69,7 @@ endef
 
 define oc_provision
 	@@for FILE in $(shell $(FIND) openshift/deploy -name \*.yml -print); \
-		do $(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS)); \
+		do $(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS),$(OC_PROJECT)); \
 	done
 endef
 
@@ -139,7 +139,7 @@ provision:
 	$(call oc_new_project,$(OC_PROD_PROJECT))
 
 define oc_create
-	@@if ! $(OC) -n "$(1)" get $(2)/$(3) >/dev/null; then \
+	@@if ! $(OC) -n "$(1)" get $(2)/$(3) 2>&1 >/dev/null; then \
 		$(OC) -n "$(1)" create $(2) $(3) >/dev/null; \
 	fi;
 	@@echo "✓ oc create $(2)/$(3)"
@@ -149,13 +149,47 @@ endef
 authorize: OC_PROJECT=$(OC_TOOLS_PROJECT)
 authorize:
 	$(call switch_project)
-	@@for FILE in $(shell $(FIND) openshift/authorize/clusterrole -name \*.yml -print); \
-		do $(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS)); \
-	done
-	$(call oc_create,$(OC_TOOLS_PROJECT),serviceaccount,circleci)
-	$(OC) -n $(OC_TOOLS_PROJECT) policy add-role-to-user $(PREFIX)linter system:serviceaccount:$(OC_TOOLS_PROJECT):circleci --role-namespace=$(OC_TOOLS_PROJECT)
-	$(OC) -n $(OC_TOOLS_PROJECT) policy add-role-to-user $(PREFIX)builder system:serviceaccount:$(OC_TOOLS_PROJECT):circleci --role-namespace=$(OC_TOOLS_PROJECT)
+	@@for FILE in $(shell $(FIND) openshift/authorize/role -name \*.yml -print); do \
+			for PROJECT in $(OC_TOOLS_PROJECT) $(OC_TEST_PROJECT) $(OC_DEV_PROJECT) $(OC_PROD_PROJECT); do \
+				$(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS),$$PROJECT); \
+			done; \
+		done;
+	$(call oc_create,$(OC_PROJECT),serviceaccount,$(PREFIX)circleci)
+	$(OC) -n $(OC_PROJECT) policy add-role-to-user $(PREFIX)linter system:serviceaccount:$(OC_PROJECT):$(PREFIX)circleci --role-namespace=$(OC_PROJECT)
+	$(OC) -n $(OC_PROJECT) policy add-role-to-user $(PREFIX)builder system:serviceaccount:$(OC_PROJECT):$(PREFIX)circleci --role-namespace=$(OC_PROJECT)
+	$(call oc_create,$(OC_PROJECT),serviceaccount,$(PREFIX)shipit)
+	$(OC) -n $(OC_TOOLS_PROJECT) policy add-role-to-user $(PREFIX)deployer system:serviceaccount:$(OC_TOOLS_PROJECT):$(PREFIX)shipit --role-namespace=$(OC_TOOLS_PROJECT)
+	$(OC) -n $(OC_TEST_PROJECT) policy add-role-to-user $(PREFIX)deployer system:serviceaccount:$(OC_TOOLS_PROJECT):$(PREFIX)shipit --role-namespace=$(OC_TEST_PROJECT)
+	$(OC) -n $(OC_DEV_PROJECT) policy add-role-to-user $(PREFIX)deployer system:serviceaccount:$(OC_TOOLS_PROJECT):$(PREFIX)shipit --role-namespace=$(OC_DEV_PROJECT)
+	$(OC) -n $(OC_PROD_PROJECT) policy add-role-to-user $(PREFIX)deployer system:serviceaccount:$(OC_TOOLS_PROJECT):$(PREFIX)shipit --role-namespace=$(OC_PROD_PROJECT)
 
 # oc get clusterrole
 # oc describe clusterrole.rbac
 # ssh -L 8443:127.0.0.1:8443 -p 54782 35.229.72.44
+
+OC_CIRCLECI_SECRET=$(shell $(OC) -n $(OC_PROJECT) describe sa $(PREFIX)circleci | awk '$$1 == "Mountable" { print $$3 }')
+OC_CIRCLECI_TOKEN=$(shell $(OC) -n $(OC_PROJECT) get secret $(OC_CIRCLECI_SECRET) -o=template --template '{{base64decode .data.token}}')
+OC_SHIPIT_SECRET=$(shell $(OC) -n $(OC_PROJECT) describe sa $(PREFIX)shipit | awk '$$1 == "Mountable" { print $$3 }')
+OC_SHIPIT_TOKEN=$(shell $(OC) -n $(OC_PROJECT) get secret $(OC_SHIPIT_SECRET) -o=template --template '{{base64decode .data.token}}')
+.PHONY: token
+token: OC_PROJECT=$(OC_TOOLS_PROJECT)
+token:
+	@@echo "\n$(OC_CIRCLECI_SECRET)"
+	@@echo "$(OC_CIRCLECI_TOKEN)\n"
+	@@echo "\n$(OC_SHIPIT_SECRET)"
+	@@echo "$(OC_SHIPIT_TOKEN)\n"
+
+
+.PHONY: scan
+scan:
+	curl https://ftp.postgresql.org/pub/source/v11.4/postgresql-11.4.tar.gz | tar xz
+	git clone -b 'v1.0.0' --single-branch https://github.com/theory/pgtap.git
+	git clone -b 'v8.2.2' --single-branch  https://github.com/citusdata/citus.git
+	docker run -d --name sonarqube -p 9000:9000 sonarqube
+	wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.0.0.1744-macosx.zip
+	unzip sonar-scanner-cli-4.0.0.1744-macosx.zip
+	./sonar-scanner-4.0.0.1744-macosx/bin/sonar-scanner \
+		-Dsonar.projectKey=cas-postgres \
+		-Dsonar.sources=. \
+		-Dsonar.projectVersion=`git rev-parse --abbrev-ref HEAD` \
+		-Dsonar.coverage.exclusions='**/*'
