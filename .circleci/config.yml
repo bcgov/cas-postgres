@@ -8,6 +8,11 @@ jobs:
     executor: redhat-openshift/machine-for-local-cluster
     steps:
       - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
       - redhat-openshift/create-local-cluster-with-oc:
           skip-registry-check: true
       - redhat-openshift/login-and-update-kubeconfig:
@@ -42,6 +47,11 @@ jobs:
     executor: redhat-openshift/default
     steps:
       - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
       - redhat-openshift/login-and-update-kubeconfig:
           insecure-skip-tls-verify: true
           openshift-platform-version: 3.x
@@ -55,6 +65,11 @@ jobs:
     executor: redhat-openshift/default
     steps:
       - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
       - redhat-openshift/login-and-update-kubeconfig:
           insecure-skip-tls-verify: true
           openshift-platform-version: 3.x
