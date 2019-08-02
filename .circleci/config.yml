@@ -29,13 +29,13 @@ jobs:
           command: make build
           name: Build image on the cluster
       - run:
-          command: make deploy_test
-          name: Deploy to test
-      - run:
-          command: make deploy_test
+          command: make install-dev
           name: Deploy to dev
       - run:
-          command: make deploy_test
+          command: make install-test
+          name: Deploy to test
+      - run:
+          command: make install-prod
           name: Deploy to prod
 
   lint:
