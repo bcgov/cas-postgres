@@ -1,5 +1,6 @@
-PATHFINDER_PREFIX=wksv3k
-PROJECT_PREFIX=cas-
+SHELL := /usr/bin/env bash
+PATHFINDER_PREFIX := wksv3k
+PROJECT_PREFIX := cas-
 
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
 include .pipeline/*.mk
