@@ -16,7 +16,7 @@ objects:
   kind: Role
   metadata:
     annotations:
-      openshift.io/description: A user who can trigger new builds but cannot delete them.
+      openshift.io/description: A user who can deploy applications
       openshift.io/reconcile-protect: "false"
     name: ${PREFIX}deployer
   rules:
@@ -40,3 +40,35 @@ objects:
     - projects
     verbs:
     - get
+  - apiGroups:
+    - ""
+    attributeRestrictions: null
+    resources:
+    - persistentvolumeclaims
+    - services
+    - configmaps
+    verbs:
+    - get
+    - create
+    - update
+    - patch
+  - apiGroups:
+    - apps.openshift.io
+    attributeRestrictions: null
+    resources:
+    - deploymentconfigs
+    verbs:
+    - get
+    - create
+    - update
+    - patch
+  - apiGroups:
+    - route.openshift.io
+    attributeRestrictions: null
+    resources:
+    - routes
+    verbs:
+    - get
+    - create
+    - update
+    - patch
