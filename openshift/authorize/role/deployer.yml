@@ -47,7 +47,9 @@ objects:
     - persistentvolumeclaims
     - services
     - configmaps
+    - pods
     verbs:
+    - list
     - get
     - create
     - update
@@ -72,3 +74,29 @@ objects:
     - create
     - update
     - patch
+  - apiGroups:
+    - template.openshift.io
+    attributeRestrictions: null
+    resources:
+    - processedtemplates
+    verbs:
+    - create
+  - apiGroups:
+    - route.openshift.io
+    attributeRestrictions: null
+    resources:
+    - routes
+    verbs:
+    - get
+    - create
+    - update
+    - patch
+  - apiGroups:
+    - batch
+    attributeRestrictions: null
+    resources:
+    - jobs
+    verbs:
+    - create
+    - delete
+    - get
