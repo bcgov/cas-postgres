@@ -19,7 +19,7 @@ jobs:
           insecure-skip-tls-verify: true
           openshift-platform-version: 3.x
           password: password
-          server-address: 'https://127.0.0.1:8443'
+          server-address: "https://127.0.0.1:8443"
           username: dev1
       - run:
           command: docker login -u "$RED_HAT_DOCKER_USERNAME" -p "$RED_HAT_DOCKER_PASSWORD" "$RED_HAT_DOCKER_SERVER"
@@ -34,13 +34,13 @@ jobs:
           command: make build
           name: Build image on the cluster
       - run:
-          command: make install-dev
+          command: make install_dev
           name: Deploy to dev
       - run:
-          command: make install-test
+          command: make install_test
           name: Deploy to test
       - run:
-          command: make install-prod
+          command: make install_prod
           name: Deploy to prod
 
   lint:

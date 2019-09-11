@@ -44,17 +44,17 @@ build: whoami
 install: whoami
 	$(call oc_promote,$(PROJECT_PREFIX)postgres)
 
-.PHONY: install-dev
-install.dev: OC_PROJECT=$(OC_DEV_PROJECT)
-install.dev: install
+.PHONY: install_dev
+install_dev: OC_PROJECT=$(OC_DEV_PROJECT)
+install_dev: install
 
-.PHONY: install-test
-install.test: OC_PROJECT=$(OC_TEST_PROJECT)
-install.test: install
+.PHONY: install_test
+install_test: OC_PROJECT=$(OC_TEST_PROJECT)
+install_test: install
 
-.PHONY: install-prod
-install.prod: OC_PROJECT=$(OC_PROD_PROJECT)
-install.prod: install
+.PHONY: install_prod
+install_prod: OC_PROJECT=$(OC_PROD_PROJECT)
+install_prod: install
 
 .PHONY: provision
 provision:
