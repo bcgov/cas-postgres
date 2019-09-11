@@ -43,6 +43,8 @@ build: whoami
 .PHONY: install
 install: whoami
 	$(call oc_promote,$(PROJECT_PREFIX)postgres)
+	$(call oc_deploy)
+	$(call oc_wait_for_deploy_ready,$(PROJECT_PREFIX)postgres)
 
 .PHONY: install_dev
 install_dev: OC_PROJECT=$(OC_DEV_PROJECT)
