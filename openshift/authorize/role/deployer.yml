@@ -92,6 +92,14 @@ objects:
     - update
     - patch
   - apiGroups:
+    - route.openshift.io
+    - ""
+    attributeRestrictions: null
+    resources:
+    - routes/custom-host
+    verbs:
+    - create
+  - apiGroups:
     - batch
     attributeRestrictions: null
     resources:
