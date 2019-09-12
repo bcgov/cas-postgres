@@ -55,7 +55,7 @@ ENV PATH /opt/app-root/src/bin:/opt/app-root/bin:/usr/local/pgsql/bin:/usr/local
 
 COPY dnf.conf .
 
-RUN INSTALL_PKGS="make gcc vim-common kernel-headers zlib-devel libcurl-devel git perl patch autoconf automake" && \
+RUN INSTALL_PKGS="nss_wrapper make gcc vim-common kernel-headers zlib-devel libcurl-devel git perl patch autoconf automake" && \
     dnf install -y --setopt=tsflags=nodocs --config=dnf.conf $INSTALL_PKGS && \
     rpm -V $INSTALL_PKGS && \
     dnf clean all -y
