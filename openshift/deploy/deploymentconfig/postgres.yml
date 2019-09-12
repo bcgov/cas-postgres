@@ -2,88 +2,91 @@ apiVersion: template.openshift.io/v1
 kind: Template
 
 parameters:
-- description: Prefix to prepend to object name.
-  displayName: Prefix
-  name: PREFIX
-  required: true
-- description: SHA1 of git revision to be deployed.
-  displayName: Git SHA1
-  name: GIT_SHA1
-  required: true
+  - description: Prefix to prepend to object name.
+    displayName: Prefix
+    name: PREFIX
+    required: true
+  - description: SHA1 of git revision to be deployed.
+    displayName: Git SHA1
+    name: GIT_SHA1
+    required: true
+  - description: Openshift project name
+    displayName: Project
+    name: OC_PROJECT
+    required: true
+  - description: Openshift registry URL
+    displayName: Registry
+    name: OC_REGISTRY
+    required: true
 
 objects:
-- apiVersion: v1
-  kind: DeploymentConfig
-  metadata:
-    name: ${PREFIX}postgres
-  spec:
-    replicas: 1
-    selector:
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
       name: ${PREFIX}postgres
-    template:
-      metadata:
-      spec:
-        dnsPolicy: ClusterFirst
-        restartPolicy: Always
-        containers:
-        - env:
-          - name: POSTGRESQL_USER
-            valueFrom:
-              secretKeyRef:
-                key: database-user
-                name: ${PREFIX}postgres
-          - name: POSTGRESQL_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                key: database-password
-                name: ${PREFIX}postgres
-          - name: POSTGRESQL_DATABASE
-            valueFrom:
-              secretKeyRef:
-                key: database-name
-                name: ${PREFIX}postgres
-          - name: POSTGRESQL_MAX_CONNECTIONS
-            value: '1000'
-          - name: POSTGRESQL_MAX_PREPARED_TRANSACTIONS
-            value: '1000'
-          - name: POSTGRESQL_SHARED_BUFFERS
-            value: 2GB
-          - name: POSTGRESQL_EFFECTIVE_CACHE_SIZE
-            value: 8GB
-          image: ${PREFIX}postgres
-          imagePullPolicy: IfNotPresent
-          livenessProbe:
-            exec:
-              command:
-              - /usr/libexec/check-container
-              - --live
-            initialDelaySeconds: 120
-            timeoutSeconds: 10
-          name: ${PREFIX}postgres
-          ports:
-          - containerPort: 5432
-            protocol: TCP
-          readinessProbe:
-            exec:
-              command:
-              - /usr/libexec/check-container
-            initialDelaySeconds: 5
-            timeoutSeconds: 1
-          resources:
-            limits:
-              memory: 16Gi
-              cpu: 8000m
-            requests:
-              cpu: 100m
-              memory: 256Mi
-          securityContext:
-            capabilities: {}
-            privileged: false
-          terminationMessagePath: /dev/termination-log
-          volumeMounts:
-          - mountPath: /var/lib/pgsql/data
+    spec:
+      replicas: 1
+      selector:
+        name: ${PREFIX}postgres
+      template:
+        metadata:
+          labels:
             name: ${PREFIX}postgres
-        volumes:
-        - name: ${PREFIX}postgres
-          persistentVolumeClaim:
-            claimName: ${PREFIX}postgres
+        spec:
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          containers:
+            - env:
+                - name: POSTGRESQL_USER
+                  valueFrom:
+                    secretKeyRef:
+                      key: database-user
+                      name: ${PREFIX}postgres
+                - name: POSTGRESQL_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: database-password
+                      name: ${PREFIX}postgres
+                - name: POSTGRESQL_DATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      key: database-name
+                      name: ${PREFIX}postgres
+                - name: POSTGRESQL_MAX_CONNECTIONS
+                  value: "1000"
+                - name: POSTGRESQL_MAX_PREPARED_TRANSACTIONS
+                  value: "1000"
+                - name: POSTGRESQL_SHARED_BUFFERS
+                  value: 2GB
+                - name: POSTGRESQL_EFFECTIVE_CACHE_SIZE
+                  value: 8GB
+              image: ${OC_REGISTRY}/${OC_PROJECT}/${PREFIX}postgres:${GIT_SHA1}
+              imagePullPolicy: IfNotPresent
+              livenessProbe:
+                exec:
+                  command:
+                    - /usr/libexec/check-container
+                    - --live
+                initialDelaySeconds: 120
+                timeoutSeconds: 10
+              name: ${PREFIX}postgres
+              ports:
+                - containerPort: 5432
+                  protocol: TCP
+              readinessProbe:
+                exec:
+                  command:
+                    - /usr/libexec/check-container
+                initialDelaySeconds: 5
+                timeoutSeconds: 1
+              securityContext:
+                capabilities: {}
+                privileged: false
+              terminationMessagePath: /dev/termination-log
+              volumeMounts:
+                - mountPath: /var/lib/pgsql/data
+                  name: ${PREFIX}postgres
+          volumes:
+            - name: ${PREFIX}postgres
+              persistentVolumeClaim:
+                claimName: ${PREFIX}postgres

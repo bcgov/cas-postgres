@@ -41,7 +41,9 @@ build: whoami
 	$(call oc_build,$(PROJECT_PREFIX)postgres)
 
 .PHONY: install
+install: OC_TEMPLATE_VARS += POSTGRESQL_PASSWORD=$(shell openssl rand -base64 32 | tr -d /=+ | cut -c -16 | base64) POSTGRESQL_USER=$(shell echo cas-postgres | base64) POSTGRESQL_DBNAME=$(shell echo ggircs | base64)
 install: whoami
+	$(call oc_create_secrets)
 	$(call oc_promote,$(PROJECT_PREFIX)postgres)
 	$(call oc_deploy)
 	$(call oc_wait_for_deploy_ready,$(PROJECT_PREFIX)postgres)
