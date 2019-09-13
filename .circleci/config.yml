@@ -25,6 +25,9 @@ jobs:
           name: Login as cluster admin
           command: oc login -u system:admin
       - run:
+          name: Create route to docker registry
+          command: oc -n default create route passthrough --service=docker-registry --hostname=docker-registry.default.svc
+      - run:
           command: make mock_storageclass
           name: Mock the storage classes
       - redhat-openshift/login-and-update-kubeconfig:
