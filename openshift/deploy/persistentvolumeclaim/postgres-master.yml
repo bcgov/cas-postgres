@@ -15,11 +15,11 @@ objects:
 - apiVersion: v1
   kind: PersistentVolumeClaim
   metadata:
-    name: ${PREFIX}postgres
+    name: ${PREFIX}postgres-master
   spec:
     storageClassName: gluster-file-db
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 20Gi

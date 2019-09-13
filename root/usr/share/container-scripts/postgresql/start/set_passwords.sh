@@ -15,3 +15,5 @@ if [ -v POSTGRESQL_ADMIN_PASSWORD ]; then
 _psql --set=adminpass="$POSTGRESQL_ADMIN_PASSWORD" \
 <<<"ALTER USER \"postgres\" WITH ENCRYPTED PASSWORD :'adminpass';"
 fi
+
+_psql <<<"CREATE EXTENSION IF NOT EXISTS \"citus\";"

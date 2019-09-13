@@ -23,37 +23,35 @@ objects:
   - apiVersion: v1
     kind: DeploymentConfig
     metadata:
-      name: ${PREFIX}postgres
+      name: ${PREFIX}postgres-master
     spec:
       strategy:
         type: Recreate
       replicas: 1
       selector:
-        name: ${PREFIX}postgres
+        name: ${PREFIX}postgres-master
+      strategy:
+        type: Recreate
       template:
         metadata:
           labels:
-            name: ${PREFIX}postgres
+            name: ${PREFIX}postgres-master
         spec:
           dnsPolicy: ClusterFirst
           restartPolicy: Always
+          terminationGracePeriodSeconds: 3600
           containers:
             - env:
-                - name: POSTGRESQL_USER
+                - name: POSTGRESQL_ADMIN_PASSWORD
                   valueFrom:
                     secretKeyRef:
-                      key: database-user
-                      name: ${PREFIX}postgres
-                - name: POSTGRESQL_PASSWORD
+                      key: postgresqlAdminPassword
+                      name: ${PREFIX}postgres-master
+                - name: PGPASSWORD
                   valueFrom:
                     secretKeyRef:
-                      key: database-password
-                      name: ${PREFIX}postgres
-                - name: POSTGRESQL_DATABASE
-                  valueFrom:
-                    secretKeyRef:
-                      key: database-name
-                      name: ${PREFIX}postgres
+                      key: postgresqlAdminPassword
+                      name: ${PREFIX}postgres-master
                 - name: POSTGRESQL_MAX_CONNECTIONS
                   value: "1000"
                 - name: POSTGRESQL_MAX_PREPARED_TRANSACTIONS
@@ -62,16 +60,27 @@ objects:
                   value: 2GB
                 - name: POSTGRESQL_EFFECTIVE_CACHE_SIZE
                   value: 8GB
+                - name: PGDATA
+                  value: /var/lib/pgsql/data/userdata
               image: ${OC_REGISTRY}/${OC_PROJECT}/${PREFIX}postgres:${GIT_SHA1}
               imagePullPolicy: IfNotPresent
+              lifecycle:
+                preStop:
+                  exec:
+                    command:
+                      - /usr/bin/env
+                      - bash
+                      - -c
+                      - |
+                        pg_ctl stop;
               livenessProbe:
                 exec:
                   command:
                     - /usr/libexec/check-container
                     - --live
                 initialDelaySeconds: 120
-                timeoutSeconds: 10
-              name: ${PREFIX}postgres
+                timeoutSeconds: 30
+              name: ${PREFIX}postgres-master
               ports:
                 - containerPort: 5432
                   protocol: TCP
@@ -87,8 +96,15 @@ objects:
               terminationMessagePath: /dev/termination-log
               volumeMounts:
                 - mountPath: /var/lib/pgsql/data
-                  name: ${PREFIX}postgres
+                  name: ${PREFIX}postgres-master
+              resources:
+                limits:
+                  cpu: 2
+                  memory: 8192Mi
+                requests:
+                  cpu: 1
+                  memory: 4096Mi
           volumes:
-            - name: ${PREFIX}postgres
+            - name: ${PREFIX}postgres-master
               persistentVolumeClaim:
-                claimName: ${PREFIX}postgres
+                claimName: ${PREFIX}postgres-master

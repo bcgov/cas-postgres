@@ -1,6 +1,7 @@
 # Configuration settings.
 export POSTGRESQL_MAX_CONNECTIONS=${POSTGRESQL_MAX_CONNECTIONS:-100}
 export POSTGRESQL_MAX_PREPARED_TRANSACTIONS=${POSTGRESQL_MAX_PREPARED_TRANSACTIONS:-0}
+export POSTGRESQL_SHARED_PRELOAD_LIBRARIES=${POSTGRESQL_SHARED_PRELOAD_LIBRARIES:-'citus'}
 
 # Perform auto-tuning based on the container cgroups limits (only when the
 # limits are set).

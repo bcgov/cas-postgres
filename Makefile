@@ -42,12 +42,31 @@ build: whoami
 	$(call oc_build,$(PROJECT_PREFIX)postgres)
 
 .PHONY: install
-install: OC_TEMPLATE_VARS += POSTGRESQL_PASSWORD=$(shell openssl rand -base64 32 | tr -d /=+ | cut -c -16 | base64) POSTGRESQL_USER=$(shell echo cas-postgres | base64) POSTGRESQL_DBNAME=$(shell echo ggircs | base64)
+install: POSTGRESQL_WORKERS=8
+install: POSTGRESQL_ADMIN_PASSWORD=$(shell openssl rand -base64 32 | tr -d /=+ | cut -c -16 | base64)
+install: OC_TEMPLATE_VARS += POSTGRESQL_WORKERS="$(POSTGRESQL_WORKERS)" POSTGRESQL_ADMIN_PASSWORD="$(POSTGRESQL_ADMIN_PASSWORD)"
 install: whoami
 	$(call oc_create_secrets)
 	$(call oc_promote,$(PROJECT_PREFIX)postgres)
 	$(call oc_deploy)
-	$(call oc_wait_for_deploy_ready,$(PROJECT_PREFIX)postgres)
+	$(call oc_wait_for_deploy_ready,$(PROJECT_PREFIX)postgres-master)
+	@@echo "TODO: wait for statefulset to be ready"
+	@@echo "waiting for all $(PROJECT_PREFIX)postgres-workers to be connected to $(PROJECT_PREFIX)postgres-master..."; \
+		POD=$$(oc get pods -o template --template='{{range .items}}{{if (.metadata.labels.deploymentconfig) and eq .metadata.labels.deploymentconfig "$(PROJECT_PREFIX)postgres-master"}}{{ .metadata.name }}{{end}}{{end}}'); \
+		AVAILABLE_COUNT="-1"; \
+		while [ "$(POSTGRESQL_WORKERS)" != "$$AVAILABLE_COUNT" ]; do \
+			AVAILABLE_COUNT="$$($(OC) -n $(OC_PROJECT) exec $$POD -- psql -qtA -v "ON_ERROR_STOP=1" -c "select count(success) from run_command_on_workers('select true') where success = true;")"; \
+			echo "connected nodes: $$AVAILABLE_COUNT"; \
+			if [ "$(POSTGRESQL_WORKERS)" != "$$AVAILABLE_COUNT" ]; then \
+				sleep 5; \
+			fi; \
+		done; \
+		if [ "$(POSTGRESQL_WORKERS)" != "$$($(OC) -n $(OC_PROJECT) exec $$POD -- psql -qtA -v "ON_ERROR_STOP=1" -c "select count(isactive) from pg_dist_node where isactive = true;")" ]; then \
+			echo "list configured workers..."; \
+			$(OC) -n $(OC_PROJECT) exec $$POD -- psql -c "select * from pg_dist_node;"; \
+			echo "try connecting to all enabled workers..."; \
+			$(OC) -n $(OC_PROJECT) exec $$POD -- psql -c "select * from run_command_on_workers('select true');"; \
+		fi;
 
 .PHONY: install_dev
 install_dev: OC_PROJECT=$(OC_DEV_PROJECT)
