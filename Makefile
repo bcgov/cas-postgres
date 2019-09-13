@@ -60,13 +60,16 @@ install_test: install
 install_prod: OC_PROJECT=$(OC_PROD_PROJECT)
 install_prod: install
 
+.PHONY: mock_storageclass
+mock_storageclass:
+	$(call oc_mock_storageclass,gluster-file gluster-file-db gluster-block)
+
 .PHONY: provision
 provision:
 	$(call oc_new_project,$(OC_TOOLS_PROJECT))
 	$(call oc_new_project,$(OC_TEST_PROJECT))
 	$(call oc_new_project,$(OC_DEV_PROJECT))
 	$(call oc_new_project,$(OC_PROD_PROJECT))
-	$(call oc_mock_storageclass,gluster-file gluster-file-db gluster-block)
 
 .PHONY: authorize
 authorize: OC_PROJECT=$(OC_TOOLS_PROJECT)
