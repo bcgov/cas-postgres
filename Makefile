@@ -66,6 +66,7 @@ provision:
 	$(call oc_new_project,$(OC_TEST_PROJECT))
 	$(call oc_new_project,$(OC_DEV_PROJECT))
 	$(call oc_new_project,$(OC_PROD_PROJECT))
+	$(call oc_mock_storageclass,gluster-file gluster-file-db gluster-block)
 
 .PHONY: authorize
 authorize: OC_PROJECT=$(OC_TOOLS_PROJECT)
