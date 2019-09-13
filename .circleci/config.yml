@@ -14,10 +14,16 @@ jobs:
             git submodule init
             git submodule update --remote
       - run:
-          name: "Copy origin config from .pipeline"
+          name: Copy origin config from .pipeline
           command: sudo cp -r .pipeline/origin /etc/origin
       - redhat-openshift/create-local-cluster-with-oc:
           skip-registry-check: true
+      - run:
+          name: Login as cluster admin
+          command: oc login -u system:admin
+      - run:
+          command: make provision
+          name: Provision the cluster project set
       - redhat-openshift/login-and-update-kubeconfig:
           insecure-skip-tls-verify: true
           openshift-platform-version: 3.x
@@ -27,9 +33,6 @@ jobs:
       - run:
           command: docker login -u "$RED_HAT_DOCKER_USERNAME" -p "$RED_HAT_DOCKER_PASSWORD" "$RED_HAT_DOCKER_SERVER"
           name: Log in to Red Hat docker registry
-      - run:
-          command: make provision
-          name: Provision the cluster project set
       - run:
           command: make configure
           name: Configure the cluster
