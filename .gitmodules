@@ -4,4 +4,4 @@
 [submodule ".pipeline"]
 	path = .pipeline
 	url = https://github.com/bcgov/cas-pipeline.git
-	branch = feature/mock-storage
+	branch = feature/cas-postgres
