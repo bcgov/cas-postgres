@@ -1,106 +1,106 @@
 version: 2.1
 
 orbs:
-      redhat-openshift: circleci/redhat-openshift@0.2.0
+  redhat-openshift: circleci/redhat-openshift@0.2.0
 
 jobs:
-      test-local-cluster:
-            executor: redhat-openshift/machine-for-local-cluster
-            steps:
-                  - checkout
-                  - run:
-                          name: "Pull Submodules"
-                          command: |
-                                git submodule init
-                                git submodule update --remote
-                  - run:
-                          name: Copy origin config from .pipeline
-                          command: sudo cp -r .pipeline/origin /etc/origin
-                  - run:
-                          name: Add Docker registry to /etc/hosts
-                          command: echo "172.30.1.1 docker-registry.default.svc" | sudo tee -a /etc/hosts
-                  - redhat-openshift/create-local-cluster-with-oc:
-                          skip-registry-check: true
-                  - run:
-                          command: docker login -u "$RED_HAT_DOCKER_USERNAME" -p "$RED_HAT_DOCKER_PASSWORD" "$RED_HAT_DOCKER_SERVER"
-                          name: Log in to Red Hat docker registry
-                  - run:
-                          name: Login as cluster admin
-                          command: oc login -u system:admin
-                  - run:
-                          command: make mock_storageclass
-                          name: Mock the storage classes
-                  - redhat-openshift/login-and-update-kubeconfig:
-                          insecure-skip-tls-verify: true
-                          openshift-platform-version: 3.x
-                          password: password
-                          server-address: "https://127.0.0.1:8443"
-                          username: dev1
-                  - run:
-                          command: make provision
-                          name: Provision the cluster project set
-                  - run:
-                          command: make configure
-                          name: Configure the cluster
-                  - run:
-                          command: make build
-                          name: Build image on the cluster
-                  - run:
-                          command: make install_dev
-                          name: Deploy to dev
-                  - run:
-                          command: make install_test
-                          name: Deploy to test
-                  - run:
-                          command: make install_prod
-                          name: Deploy to prod
+  test-local-cluster:
+    executor: redhat-openshift/machine-for-local-cluster
+    steps:
+      - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
+      - run:
+          name: Copy origin config from .pipeline
+          command: sudo cp -r .pipeline/origin /etc/origin
+      - run:
+          name: Add Docker registry to /etc/hosts
+          command: echo "172.30.1.1 docker-registry.default.svc" | sudo tee -a /etc/hosts
+      - redhat-openshift/create-local-cluster-with-oc:
+          skip-registry-check: true
+      - run:
+          command: docker login -u "$RED_HAT_DOCKER_USERNAME" -p "$RED_HAT_DOCKER_PASSWORD" "$RED_HAT_DOCKER_SERVER"
+          name: Log in to Red Hat docker registry
+      - run:
+          name: Login as cluster admin
+          command: oc login -u system:admin
+      - run:
+          command: make mock_storageclass
+          name: Mock the storage classes
+      - redhat-openshift/login-and-update-kubeconfig:
+          insecure-skip-tls-verify: true
+          openshift-platform-version: 3.x
+          password: password
+          server-address: "https://127.0.0.1:8443"
+          username: dev1
+      - run:
+          command: make provision
+          name: Provision the cluster project set
+      - run:
+          command: make configure
+          name: Configure the cluster
+      - run:
+          command: make build
+          name: Build image on the cluster
+      - run:
+          command: make install_dev
+          name: Deploy to dev
+      - run:
+          command: make install_test
+          name: Deploy to test
+      - run:
+          command: make install_prod
+          name: Deploy to prod
 
-      lint:
-            executor: redhat-openshift/default
-            steps:
-                  - checkout
-                  - run:
-                          name: "Pull Submodules"
-                          command: |
-                                git submodule init
-                                git submodule update --remote
-                  - redhat-openshift/login-and-update-kubeconfig:
-                          insecure-skip-tls-verify: true
-                          openshift-platform-version: 3.x
-                          server-address: $OC_SERVER_ADDRESS
-                          token: $OC_TOKEN
-                  - run:
-                          command: make lint
-                          name: Lint the openshift yaml
+  lint:
+    executor: redhat-openshift/default
+    steps:
+      - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
+      - redhat-openshift/login-and-update-kubeconfig:
+          insecure-skip-tls-verify: true
+          openshift-platform-version: 3.x
+          server-address: $OC_SERVER_ADDRESS
+          token: $OC_TOKEN
+      - run:
+          command: make lint
+          name: Lint the openshift yaml
 
-      build:
-            executor: redhat-openshift/default
-            steps:
-                  - checkout
-                  - run:
-                          name: "Pull Submodules"
-                          command: |
-                                git submodule init
-                                git submodule update --remote
-                  - redhat-openshift/login-and-update-kubeconfig:
-                          insecure-skip-tls-verify: true
-                          openshift-platform-version: 3.x
-                          server-address: $OC_SERVER_ADDRESS
-                          token: $OC_TOKEN
-                  - run:
-                          command: make configure
-                          name: Configure imagestream to point at the current SHA1
-                  - run:
-                          command: make build
-                          name: Build image on the remote cluster
+  build:
+    executor: redhat-openshift/default
+    steps:
+      - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
+      - redhat-openshift/login-and-update-kubeconfig:
+          insecure-skip-tls-verify: true
+          openshift-platform-version: 3.x
+          server-address: $OC_SERVER_ADDRESS
+          token: $OC_TOKEN
+      - run:
+          command: make configure
+          name: Configure imagestream to point at the current SHA1
+      - run:
+          command: make build
+          name: Build image on the remote cluster
 
 workflows:
-      test:
-            jobs:
-                  - lint
-                  - build:
-                          requires:
-                                - lint
-                  - test-local-cluster:
-                          requires:
-                                - lint
+  test:
+    jobs:
+      - lint
+      - build:
+          requires:
+            - lint
+      - test-local-cluster:
+          requires:
+            - lint
