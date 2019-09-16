@@ -25,9 +25,6 @@ jobs:
                   name: Login as cluster admin
                   command: oc login -u system:admin
             - run:
-                  name: Expose the docker registry
-                  command: oc -n default expose service docker-registry --hostname=docker-registry.default.svc
-            - run:
                   command: make mock_storageclass
                   name: Mock the storage classes
             - redhat-openshift/login-and-update-kubeconfig:
@@ -46,13 +43,13 @@ jobs:
                   command: make build
                   name: Build image on the cluster
             - run:
-                  command: make install_dev
+                  command: make install_dev OC_REGISTRY=172.30.1.1:5000
                   name: Deploy to dev
             - run:
-                  command: make install_test
+                  command: make install_test OC_REGISTRY=172.30.1.1:5000
                   name: Deploy to test
             - run:
-                  command: make install_prod
+                  command: make install_prod OC_REGISTRY=172.30.1.1:5000
                   name: Deploy to prod
 
     lint:
