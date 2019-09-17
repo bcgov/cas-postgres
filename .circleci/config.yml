@@ -2,6 +2,12 @@ version: 2.1
 
 orbs:
   redhat-openshift: circleci/redhat-openshift@0.2.0
+  orb-tools: circleci/orb-tools@8.27.4
+
+executors:
+  default:
+    docker:
+      - image: "circleci/node:lts"
 
 jobs:
   test-local-cluster:
@@ -94,13 +100,30 @@ jobs:
           command: make build
           name: Build image on the remote cluster
 
+  test-unit:
+    executor: default
+    steps:
+      - orb-tools/install-bats
+      - checkout
+      - run:
+          name: Pull Submodules
+          command: |
+            git submodule init
+            git submodule update --remote
+      - run:
+          command: make test_unit
+          name: Run unit tests via make
+
 workflows:
   test:
     jobs:
       - lint
+      - test-unit
       - build:
           requires:
             - lint
+            - test-unit
       - test-local-cluster:
           requires:
             - lint
+            - test-unit

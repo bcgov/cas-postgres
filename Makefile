@@ -3,6 +3,7 @@ PATHFINDER_PREFIX := wksv3k
 PROJECT_PREFIX := cas-
 
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
+PROJECT_FOLDER := $(abspath $(realpath $(lastword $(MAKEFILE_LIST)))/../)
 include .pipeline/*.mk
 
 .PHONY: help
@@ -123,3 +124,17 @@ scan:
 .PHONY: old_tags
 old_tags:
 	oc get is/cas-postgres -o go-template='{{range .status.tags}}{{$$tag := .tag}}{{range .items}}{{.created}}{{"\t"}}{{$$tag}}{{"\n"}}{{end}}{{end}}' | sort -r | tail -n +8 | awk '{print $$2}'
+
+ifeq ($(MAKECMDGOALS),$(filter $(MAKECMDGOALS),test_e2e test_unit))
+include $(PROJECT_FOLDER)/.pipeline/test/bats.mk
+endif
+
+
+.PHONY: test_e2e
+test_e2e: # https://github.com/bats-core/bats-core
+	$(call bats_test,$(call make_recursive_wildcard,$(PROJECT_FOLDER)/test/e2e,*.bats))
+
+.PHONY: test_unit
+test_unit: # https://github.com/bats-core/bats-core
+	$(call bats_test,$(call make_recursive_wildcard,$(PROJECT_FOLDER)/test/unit,*.bats))
+

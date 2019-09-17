@@ -2,3 +2,6 @@
 	path = .pipeline
 	url = https://github.com/bcgov/cas-pipeline.git
 	branch = feature/cas-postgres
+[submodule "test/helpers/shellmock"]
+	path = test/helpers/shellmock
+	url = https://github.com/capitalone/bash_shell_mock
