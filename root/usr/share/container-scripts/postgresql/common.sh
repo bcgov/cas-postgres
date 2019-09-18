@@ -165,7 +165,6 @@ EOF
   # FIXME: would be nice-to-have if we could allow connections only from
   #        specific hosts / subnet
   cat > "$PGDATA/pg_hba.conf" <<EOF
-
 #
 # Custom OpenShift configuration starting at this point.
 #
@@ -183,6 +182,7 @@ host replication postgres 127.0.0.1/32 trust
 host replication postgres ::1/128 trust
 
 # Allow connections from all hosts.
+local all all md5
 host all all all md5
 
 # Allow replication connections from all hosts.
