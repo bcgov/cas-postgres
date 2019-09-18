@@ -161,14 +161,26 @@ function initialize_database() {
 include '${POSTGRESQL_CONFIG_FILE}'
 EOF
 
-  # Access control configuration.
+  # Access control configuration. This overrides the default configuration
   # FIXME: would be nice-to-have if we could allow connections only from
   #        specific hosts / subnet
-  cat >> "$PGDATA/pg_hba.conf" <<EOF
+  cat > "$PGDATA/pg_hba.conf" <<EOF
 
 #
 # Custom OpenShift configuration starting at this point.
 #
+
+# TYPE DATABASE USER ADDRESS METHOD
+
+# trust all local connections for the postgres user
+local all postgres  trust
+host all postgres 127.0.0.1/32 trust
+host all postgres ::1/128 trust
+
+# Allow replication connections from localhost, for the postgres user
+local replication postgres trust
+host replication postgres 127.0.0.1/32 trust
+host replication postgres ::1/128 trust
 
 # Allow connections from all hosts.
 host all all all md5
