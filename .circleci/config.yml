@@ -55,6 +55,9 @@ jobs:
           command: make install_dev
           name: Deploy to dev
       - run:
+          command: make test_e2e OC_PROJECT=wksv3k-dev
+          name: Run e2e tests on dev
+      - run:
           command: make install_test
           name: Deploy to test
       - run:

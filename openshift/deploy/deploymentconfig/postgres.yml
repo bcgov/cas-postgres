@@ -25,6 +25,8 @@ objects:
     metadata:
       name: ${PREFIX}postgres
     spec:
+      strategy:
+        type: Recreate
       replicas: 1
       selector:
         name: ${PREFIX}postgres

@@ -30,9 +30,9 @@ teardown() {
     run $CREATE_USER $USER $DB $PASS_LEN
     echo "${lines[@]}" # prints the lines if test fails
 
-    [ "${lines[0]}" == "CREATE DATABASE :'db';" ]
-    [ "${lines[1]}" == "CREATE USER :'user' WITH ENCRYPTED PASSWORD :'password';" ]
-    [ "${lines[2]}" == "GRANT ALL PRIVILEGES ON DATABASE :'db' TO :'user';" ]
+    [ "${lines[0]}" == "CREATE DATABASE :db;" ]
+    [ "${lines[1]}" == "CREATE USER :user WITH ENCRYPTED PASSWORD :'password';" ]
+    [ "${lines[2]}" == "GRANT ALL PRIVILEGES ON DATABASE :db TO :user;" ]
     [ "${#lines[3]}" -eq $PASS_LEN ]
 }
 
