@@ -26,7 +26,10 @@ PASSWORD=$(< /dev/urandom tr -dc _A-Za-z0-9- | head -c"${3:-16}";echo;)
 psql -q --set db="$2" --set user="$1" --set password="$PASSWORD" <<EOF
 CREATE DATABASE :db;
 CREATE USER :user WITH ENCRYPTED PASSWORD :'password';
-GRANT ALL PRIVILEGES ON DATABASE :db TO :user;
+REVOKE ALL ON DATABASE :db FROM public;
+REVOKE CONNECT ON DATABASE postgres FROM :user;
+GRANT ALL ON DATABASE :db TO :user;
+ALTER DATABASE :db OWNER TO :user;
 EOF
 
 echo -n "$PASSWORD"

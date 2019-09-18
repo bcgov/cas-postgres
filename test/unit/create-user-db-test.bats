@@ -32,8 +32,11 @@ teardown() {
 
     [ "${lines[0]}" == "CREATE DATABASE :db;" ]
     [ "${lines[1]}" == "CREATE USER :user WITH ENCRYPTED PASSWORD :'password';" ]
-    [ "${lines[2]}" == "GRANT ALL PRIVILEGES ON DATABASE :db TO :user;" ]
-    [ "${#lines[3]}" -eq $PASS_LEN ]
+    [ "${lines[2]}" == "REVOKE ALL ON DATABASE :db FROM public;" ]
+    [ "${lines[3]}" == "REVOKE CONNECT ON DATABASE postgres FROM :user;" ]
+    [ "${lines[4]}" == "GRANT ALL ON DATABASE :db TO :user;" ]
+    [ "${lines[5]}" == "ALTER DATABASE :db OWNER TO :user;" ]
+    [ "${#lines[6]}" -eq $PASS_LEN ]
 }
 
 @test "create-user-db prints a password of length 16 by default" {
@@ -44,5 +47,5 @@ teardown() {
     run $CREATE_USER $USER $DB
     echo "${lines[@]}" # prints the lines if test fails
 
-    [ "${#lines[3]}" -eq 16 ]
+    [ "${#lines[6]}" -eq 16 ]
 }
