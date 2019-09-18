@@ -15,3 +15,5 @@ teardown() {
   run make --no-print-directory -f "${fixture}" create-user-db USER="$USER" DB="$DB" PASS_LEN="$PASS_LEN"
   [ "${#lines[0]}" -eq "$PASS_LEN" ]
 }
+
+

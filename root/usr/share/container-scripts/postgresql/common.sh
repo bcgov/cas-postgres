@@ -191,11 +191,6 @@ EOF
 }
 
 function create_users() {
-  if [[ ",$postinitdb_actions," = *,simple_db,* ]]; then
-    createuser "$POSTGRESQL_USER"
-    createdb --owner="$POSTGRESQL_USER" "$POSTGRESQL_DATABASE"
-  fi
-
   if [ -v POSTGRESQL_MASTER_USER ]; then
     createuser "$POSTGRESQL_MASTER_USER"
   fi

@@ -9,3 +9,7 @@ create-user-db:
 drop-user-db:
 	$(call oc_exec_all_pods,cas-postgres,dropdb $(DB))
 	$(call oc_exec_all_pods,cas-postgres,dropuser $(USER))
+
+.PHONY: test-user-password
+test-user-password:
+	$(call oc_exec_all_pods,cas-postgres,PGPASSWORD="$(PASS)" -U $(USER) -d $(DB)
