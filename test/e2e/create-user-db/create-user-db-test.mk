@@ -7,5 +7,5 @@ create-user-db:
 
 .PHONY: drop-user-db
 drop-user-db:
-	$(call oc_exec_all_pods,cas-postgres,dropuser $(USER))
 	$(call oc_exec_all_pods,cas-postgres,dropdb $(DB))
+	$(call oc_exec_all_pods,cas-postgres,dropuser $(USER))

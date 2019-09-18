@@ -23,7 +23,7 @@ fi
 
 PASSWORD=$(< /dev/urandom tr -dc _A-Za-z0-9- | head -c"${3:-16}";echo;)
 
-psql --set db="$2" --set user="$1" --set password="$PASSWORD" <<EOF
+psql -q --set db="$2" --set user="$1" --set password="$PASSWORD" <<EOF
 CREATE DATABASE :db;
 CREATE USER :user WITH ENCRYPTED PASSWORD :'password';
 GRANT ALL PRIVILEGES ON DATABASE :db TO :user;

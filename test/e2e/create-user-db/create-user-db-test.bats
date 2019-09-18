@@ -8,10 +8,10 @@ setup() {
 }
 
 teardown() {
-  make -f "${fixture}" drop-user-db USER="$USER" DB="$DB"
+  make --no-print-directory -f "${fixture}" drop-user-db USER="$USER" DB="$DB"
 }
 
 @test "create-user-db prints a password" {
-  result="$(make -f "${fixture}" create-user-db USER="$USER" DB="$DB" PASS_LEN="$PASS_LEN")"
-  [ ${#result} -eq "$PASS_LEN" ]
+  make --no-print-directory -f "${fixture}" create-user-db USER="$USER" DB="$DB" PASS_LEN="$PASS_LEN"
+  [ "${#lines[0]}" -eq "$PASS_LEN" ]
 }
