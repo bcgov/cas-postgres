@@ -12,4 +12,4 @@ drop-user-db:
 
 .PHONY: test-user-password
 test-user-password:
-	$(call oc_exec_all_pods,cas-postgres-master,PGPASSWORD="$(PASS)" -U $(USER) -d $(DB)
+	$(call oc_exec_all_pods,cas-postgres-master,PGPASSWORD="$(PASS)" psql -tq -U "$(USER)" -d "$(DB)" -c "select \'ok\';")

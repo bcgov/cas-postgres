@@ -21,23 +21,41 @@ if [ "$#" -ne 2 ] && [ "$#" -ne 3 ]; then
     usage
 fi
 
-PASSWORD=$(< /dev/urandom tr -dc _A-Za-z0-9- | head -c"${3:-16}";echo;)
+password=$(< /dev/urandom tr -dc _A-Za-z0-9- | head -c"${3:-16}";echo;)
+user=$1
+db=$2
 
-psql -qtA -v "ON_ERROR_STOP=1" --set db="$2" --set user="$1" --set password="$PASSWORD" <<EOF
-CREATE DATABASE :db;
-CREATE USER :user WITH ENCRYPTED PASSWORD :'password';
-REVOKE ALL ON DATABASE :db FROM public;
-REVOKE CONNECT ON DATABASE postgres FROM :user;
-GRANT ALL ON DATABASE :db TO :user;
-ALTER DATABASE :db OWNER TO :user;
-select * from run_command_on_workers($$
-  CREATE DATABASE :db;
-  CREATE USER :user WITH ENCRYPTED PASSWORD :'password';
-  REVOKE ALL ON DATABASE :db FROM public;
-  REVOKE CONNECT ON DATABASE postgres FROM :user;
-  GRANT ALL ON DATABASE :db TO :user;
-  ALTER DATABASE :db OWNER TO :user;
-$$);
+_psql() {
+    PGOPTIONS='--client-min-messages=warning' psql -qtA --set ON_ERROR_STOP=1 "$@"
+}
+
+create_db_query="create database $db;"
+read -r -d '' create_user_query<<EOF
+create user $user with encrypted password '$password';
+revoke all on database $db from public;
+revoke all on database postgres from $user;
+grant all on database $db to $user;
+alter database $db owner to $user;
 EOF
 
-echo -n "$PASSWORD"
+read -ra worker_nodes <<< "$(_psql -c 'select node_name from master_get_active_worker_nodes();')"
+
+_psql << EOF
+    $create_db_query
+    select * from run_command_on_workers('$create_db_query');
+EOF
+
+_psql << EOF
+    $create_user_query
+    select * from run_command_on_workers('$create_user_query');
+EOF
+
+_psql -d "$db" -c "create extension citus;"
+
+for worker_node in "${worker_nodes[@]}"
+do
+ _psql -d "$db" -c "select * from master_add_node(\'$worker_node\', 5432);"
+done
+
+
+echo -n "$password"

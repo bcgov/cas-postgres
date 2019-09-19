@@ -17,4 +17,18 @@ teardown() {
   [ "${#lines[0]}" -eq "$PASS_LEN" ]
 }
 
+@test "create-user-db creates a user that can log in to the db" {
+  skip
+  PASS=$(make --no-print-directory -f "${fixture}" create-user-db USER="$USER" DB="$DB" PASS_LEN="$PASS_LEN")
+  run make --no-print-directory -f "${fixture}" test-user-password USER="$USER" DB="$DB" PASS="$PASS"
+  echo "${lines[@]}" # prints the lines if test fails
+  [ "$(echo -e "${lines[0]}" | tr -d '[:space:]')" == "ok" ]
+}
 
+@test "create-user-db creates a user that fails to log in with the wrong password" {
+  skip
+  PASS=$(make --no-print-directory -f "${fixture}" create-user-db USER="$USER" DB="$DB" PASS_LEN="$PASS_LEN")
+  run make --no-print-directory -f "${fixture}" test-user-password USER="$USER" DB="$DB" PASS="wrongpassword"
+  echo "${lines[@]}" # prints the lines if test fails
+  [ "$(echo -e "${lines[0]}" | tr -d '[:space:]')" == "ok" ]
+}

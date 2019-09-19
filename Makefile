@@ -42,7 +42,7 @@ build: whoami
 	$(call oc_build,$(PROJECT_PREFIX)postgres)
 
 .PHONY: install
-install: POSTGRESQL_WORKERS=8
+install: POSTGRESQL_WORKERS=2
 install: POSTGRESQL_ADMIN_PASSWORD=$(shell openssl rand -base64 32 | tr -d /=+ | cut -c -16 | base64)
 install: OC_TEMPLATE_VARS += POSTGRESQL_WORKERS="$(POSTGRESQL_WORKERS)" POSTGRESQL_ADMIN_PASSWORD="$(POSTGRESQL_ADMIN_PASSWORD)"
 install: whoami
@@ -52,7 +52,7 @@ install: whoami
 	$(call oc_wait_for_deploy_ready,$(PROJECT_PREFIX)postgres-master)
 	@@echo "TODO: wait for statefulset to be ready"
 	@@echo "waiting for all $(PROJECT_PREFIX)postgres-workers to be connected to $(PROJECT_PREFIX)postgres-master..."; \
-		POD=$$(oc get pods -o template --template='{{range .items}}{{if (.metadata.labels.deploymentconfig) and eq .metadata.labels.deploymentconfig "$(PROJECT_PREFIX)postgres-master"}}{{ .metadata.name }}{{end}}{{end}}'); \
+		POD=$$($(OC) -n $(OC_PROJECT) get pods --selector deploymentconfig=$(PROJECT_PREFIX)postgres-master --field-selector status.phase=Running -o name | cut -d '/' -f 2 ); \
 		AVAILABLE_COUNT="-1"; \
 		while [ "$(POSTGRESQL_WORKERS)" != "$$AVAILABLE_COUNT" ]; do \
 			AVAILABLE_COUNT="$$($(OC) -n $(OC_PROJECT) exec $$POD -- psql -qtA -v "ON_ERROR_STOP=1" -c "select count(success) from run_command_on_workers('select true') where success = true;")"; \
