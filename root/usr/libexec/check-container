@@ -29,6 +29,4 @@ fi
 # is handled externally (readinessProbe.timeoutSeconds).
 pg_isready -q \
     -h 127.0.0.1 \
-    ${POSTGRESQL_USER+-U "$POSTGRESQL_USER"} \
-    ${POSTGRESQL_DATABASE+-d "$POSTGRESQL_DATABASE"} \
     --timeout 0
