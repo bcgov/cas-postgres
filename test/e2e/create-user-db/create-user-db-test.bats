@@ -13,6 +13,7 @@ teardown() {
 
 @test "create-user-db prints a password" {
   run make --no-print-directory -f "${fixture}" create-user-db USER="$USER" DB="$DB" PASS_LEN="$PASS_LEN"
+  echo "${lines[@]}" # prints the lines if test fails
   [ "${#lines[0]}" -eq "$PASS_LEN" ]
 }
 
