@@ -52,17 +52,16 @@ jobs:
           command: make build
           name: Build image on the cluster
       - run:
-          command: make install_dev
+          command: >
+            make install_dev
+            MASTER_CPU_REQUEST="300m" MASTER_CPU_LIMIT="300m"
+            WORKER_CPU_REQUEST="300m" WORKER_CPU_LIMIT="300m"
+            MASTER_MEMORY_REQUEST="512Mi" MASTER_MEMORY_LIMIT="512Mi"
+            WORKER_MEMORY_REQUEST="512Mi" WORKER_MEMORY_LIMIT="512Mi"
           name: Deploy to dev
       - run:
           command: make test_e2e OC_PROJECT=wksv3k-dev
           name: Run e2e tests on dev
-      - run:
-          command: make install_test
-          name: Deploy to test
-      - run:
-          command: make install_prod
-          name: Deploy to prod
 
   lint:
     executor: redhat-openshift/default

@@ -23,6 +23,22 @@ parameters:
     required: false
     value: "0"
     name: POSTGRESQL_WORKERS
+  - description: Requested CPU
+    displayName: CPU request
+    name: WORKER_CPU_REQUEST
+    required: true
+  - description: Maximum CPU
+    displayName: CPU limit
+    name: WORKER_CPU_LIMIT
+    required: true
+  - description: Requested memory
+    displayName: Memory request
+    name: WORKER_MEMORY_REQUEST
+    required: true
+  - description: Maximum memory
+    displayName: Memory limit
+    name: WORKER_MEMORY_LIMIT
+    required: true
 
 objects:
   - apiVersion: apps/v1beta2
@@ -124,18 +140,18 @@ objects:
                 timeoutSeconds: 10
               resources:
                 limits:
-                  cpu: '1'
-                  memory: 4096Mi
+                  cpu: ${WORKER_CPU_LIMIT}
+                  memory: ${WORKER_MEMORY_LIMIT}
                 requests:
-                  cpu: 500m
-                  memory: 2048Mi
+                  cpu: ${WORKER_CPU_REQUEST}
+                  memory: ${WORKER_MEMORY_LIMIT}
       volumeClaimTemplates:
-      - metadata:
-          name: ${PREFIX}postgres-worker
-        spec:
-          storageClassName: gluster-file-db
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 20Gi
+        - metadata:
+            name: ${PREFIX}postgres-worker
+          spec:
+            storageClassName: gluster-file-db
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 20Gi
