@@ -14,6 +14,7 @@ teardown() {
 }
 
 @test "create-user-db creates a user, db, and prints a password" {
+    skip
     USER='foo'
     DB='bar'
     PASS_LEN=42
@@ -27,6 +28,7 @@ teardown() {
 }
 
 @test "create-user-db prints a password of length 16 by default" {
+    skip
     USER='foo'
     DB='bar'
     EXPECTED_ARGS="--set db=$DB --set user=$USER --set password=[_A-Za-z0-9-]*"
