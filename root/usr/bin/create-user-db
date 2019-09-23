@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 
 # =============================================================================
@@ -26,7 +26,7 @@ user=$1
 db=$2
 
 _psql() {
-    PGOPTIONS='--client-min-messages=warning' psql -qtA --set ON_ERROR_STOP=1 "$@"
+    psql_out=$(PGOPTIONS='--client-min-messages=warning' psql -qtA --set ON_ERROR_STOP=1 "$@")
 }
 
 create_db_query="create database $db;"
@@ -37,8 +37,9 @@ revoke all on database postgres from $user;
 grant all on database $db to $user;
 alter database $db owner to $user;
 EOF
+escaped_create_user_query="${create_user_query//\'/\'\'}"
 
-read -ra worker_nodes <<< "$(_psql -c 'select node_name from master_get_active_worker_nodes();')"
+read -ra worker_nodes<<<"$(_psql -c 'select node_name from master_get_active_worker_nodes();')"
 
 _psql << EOF
     $create_db_query
@@ -47,15 +48,14 @@ EOF
 
 _psql << EOF
     $create_user_query
-    select * from run_command_on_workers('$create_user_query');
+    select * from run_command_on_workers('$escaped_create_user_query');
 EOF
 
 _psql -d "$db" -c "create extension citus;"
 
 for worker_node in "${worker_nodes[@]}"
 do
- _psql -d "$db" -c "select * from master_add_node(\'$worker_node\', 5432);"
+ _psql -d "$db" -c "select * from master_add_node('$worker_node', 5432);"
 done
-
 
 echo -n "$password"
