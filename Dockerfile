@@ -55,14 +55,14 @@ ENV PATH /opt/app-root/src/bin:/opt/app-root/bin:/usr/local/pgsql/bin:/usr/local
 
 COPY dnf.conf .
 
-RUN INSTALL_PKGS="nss_wrapper make gcc vim-common kernel-headers zlib-devel libcurl-devel git perl patch autoconf automake" && \
+RUN INSTALL_PKGS="nss_wrapper make gcc vim-common kernel-headers zlib-devel libcurl-devel git perl patch autoconf automake libxml2-devel" && \
     dnf install -y --setopt=tsflags=nodocs --config=dnf.conf $INSTALL_PKGS && \
     rpm -V $INSTALL_PKGS && \
     dnf clean all -y
 
 RUN curl https://ftp.postgresql.org/pub/source/v11.4/postgresql-11.4.tar.gz | tar xz && \
     pushd postgresql-11.4 && \
-    ./configure --without-readline && \
+    ./configure --without-readline --with-libxml && \
     make && \
     make install && \
     popd && \
