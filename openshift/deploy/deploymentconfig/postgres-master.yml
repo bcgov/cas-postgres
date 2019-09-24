@@ -119,7 +119,7 @@ objects:
                   memory: ${MASTER_MEMORY_LIMIT}
                 requests:
                   cpu: ${MASTER_CPU_REQUEST}
-                  memory: ${MASTER_MEMORY_LIMIT}
+                  memory: ${MASTER_MEMORY_REQUEST}
           volumes:
             - name: ${PREFIX}postgres-master
               persistentVolumeClaim:

@@ -144,7 +144,7 @@ objects:
                   memory: ${WORKER_MEMORY_LIMIT}
                 requests:
                   cpu: ${WORKER_CPU_REQUEST}
-                  memory: ${WORKER_MEMORY_LIMIT}
+                  memory: ${WORKER_MEMORY_REQUEST}
       volumeClaimTemplates:
         - metadata:
             name: ${PREFIX}postgres-worker
