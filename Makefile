@@ -57,7 +57,7 @@ build: whoami
 	$(call oc_build,$(PROJECT_PREFIX)postgres)
 
 .PHONY: install
-install: POSTGRESQL_WORKERS=2
+install: POSTGRESQL_WORKERS=8
 install: POSTGRESQL_ADMIN_PASSWORD=$(shell openssl rand -base64 32 | tr -d /=+ | cut -c -16 | base64)
 install: OC_TEMPLATE_VARS += POSTGRESQL_WORKERS="$(POSTGRESQL_WORKERS)" POSTGRESQL_ADMIN_PASSWORD="$(POSTGRESQL_ADMIN_PASSWORD)"
 install: whoami
