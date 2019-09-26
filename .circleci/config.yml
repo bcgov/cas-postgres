@@ -20,9 +20,6 @@ jobs:
             git submodule init
             git submodule update --remote
       - run:
-          name: Copy origin config from .pipeline
-          command: sudo cp -r .pipeline/origin /etc/origin
-      - run:
           name: Add Docker registry to /etc/hosts
           command: echo "172.30.1.1 docker-registry.default.svc" | sudo tee -a /etc/hosts
       - redhat-openshift/create-local-cluster-with-oc:
