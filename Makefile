@@ -6,20 +6,6 @@ THIS_FILE := $(lastword $(MAKEFILE_LIST))
 PROJECT_FOLDER := $(abspath $(realpath $(lastword $(MAKEFILE_LIST)))/../)
 include .pipeline/*.mk
 
-MASTER_CPU_REQUEST="1"
-MASTER_CPU_LIMIT="2"
-MASTER_MEMORY_REQUEST="4096Mi"
-MASTER_MEMORY_LIMIT="8192Mi"
-
-WORKER_CPU_REQUEST="500m"
-WORKER_CPU_LIMIT="1"
-WORKER_MEMORY_REQUEST="2048Mi"
-WORKER_MEMORY_LIMIT="4096Mi"
-
-OC_TEMPLATE_VARS += MASTER_CPU_REQUEST=${MASTER_CPU_REQUEST} MASTER_CPU_LIMIT=${MASTER_CPU_LIMIT}
-OC_TEMPLATE_VARS += MASTER_MEMORY_REQUEST=${MASTER_MEMORY_REQUEST} MASTER_MEMORY_LIMIT=${MASTER_MEMORY_LIMIT}
-OC_TEMPLATE_VARS += WORKER_CPU_REQUEST=${WORKER_CPU_REQUEST} WORKER_CPU_LIMIT=${WORKER_CPU_LIMIT}
-OC_TEMPLATE_VARS += WORKER_MEMORY_REQUEST=${WORKER_MEMORY_REQUEST} WORKER_MEMORY_LIMIT=${WORKER_MEMORY_LIMIT}
 
 .PHONY: help
 help: $(call make_help,help,Explains how to use this Makefile)
@@ -57,9 +43,21 @@ build: whoami
 	$(call oc_build,$(PROJECT_PREFIX)postgres)
 
 .PHONY: install
-install: POSTGRESQL_WORKERS=8
+install: POSTGRESQL_WORKERS != if [ "$(OC_PROJECT)" == "$(OC_PROD_PROJECT)" ]; then echo 8; else echo 4; fi;
+install: MASTER_CPU_REQUEST != if [ "$(OC_PROJECT)" == "$(OC_PROD_PROJECT)" ]; then echo 1; else echo "500m"; fi;
+install: MASTER_CPU_LIMIT="2"
+install: MASTER_MEMORY_REQUEST="4096Mi"
+install: MASTER_MEMORY_LIMIT="8192Mi"
+install: WORKER_CPU_REQUEST != if [ "$(OC_PROJECT)" == "$(OC_PROD_PROJECT)" ]; then echo "500m"; else echo "250m"; fi;
+install: WORKER_CPU_LIMIT="1"
+install: WORKER_MEMORY_REQUEST="2048Mi"
+install: WORKER_MEMORY_LIMIT="4096Mi"
 install: POSTGRESQL_ADMIN_PASSWORD=$(shell openssl rand -base64 32 | tr -d /=+ | cut -c -16 | base64)
 install: OC_TEMPLATE_VARS += POSTGRESQL_WORKERS="$(POSTGRESQL_WORKERS)" POSTGRESQL_ADMIN_PASSWORD="$(POSTGRESQL_ADMIN_PASSWORD)"
+install: OC_TEMPLATE_VARS += MASTER_CPU_REQUEST=$(MASTER_CPU_REQUEST) MASTER_CPU_LIMIT=$(MASTER_CPU_LIMIT)
+install: OC_TEMPLATE_VARS += MASTER_MEMORY_REQUEST=$(MASTER_MEMORY_REQUEST) MASTER_MEMORY_LIMIT=$(MASTER_MEMORY_LIMIT)
+install: OC_TEMPLATE_VARS += WORKER_CPU_REQUEST=$(WORKER_CPU_REQUEST) WORKER_CPU_LIMIT=$(WORKER_CPU_LIMIT)
+install: OC_TEMPLATE_VARS += WORKER_MEMORY_REQUEST=$(WORKER_MEMORY_REQUEST) WORKER_MEMORY_LIMIT=$(WORKER_MEMORY_LIMIT)
 install: whoami
 	$(call oc_create_secrets)
 	$(call oc_promote,$(PROJECT_PREFIX)postgres)
@@ -105,10 +103,6 @@ provision:
 	$(call oc_new_project,$(OC_TEST_PROJECT))
 	$(call oc_new_project,$(OC_DEV_PROJECT))
 	$(call oc_new_project,$(OC_PROD_PROJECT))
-
-# oc get clusterrole
-# oc describe clusterrole.rbac
-# ssh -L 8443:127.0.0.1:8443 -p 54782 35.229.72.44
 
 OC_CIRCLECI_SECRET=$(shell $(OC) -n $(OC_PROJECT) describe sa $(PROJECT_PREFIX)circleci | awk '$$1 == "Mountable" { print $$3 }')
 OC_CIRCLECI_TOKEN=$(shell $(OC) -n $(OC_PROJECT) get secret $(OC_CIRCLECI_SECRET) -o=template --template '{{base64decode .data.token}}')

@@ -26,19 +26,19 @@ This step deploys the postgres Citus cluster in the `OC_PROJECT` namespace.
 Using the `install_dev`, `install_test` or `install_prod` make target will execute `install` with the `OC_DEV_PROJECT`, `OC_TEST_PROJECT` or `OC_PROD_PROJECT`, respectively.
 As a convenience for deployment by [Shipit], the `OC_PROJECT` variable has default value set to be equal to the `ENVIRONMENT` variable defined by Shipit (see the [pipeline submodule] for more details).
 
-The `install` target also supports the following environment variables:
+The `install` and `install_*` targets also supports the following variables (usage: `make install POSTGRESQL_WORKERS=4`):
 
-| Name                  | Description                                                   | Default value |
-| --------------------- | ------------------------------------------------------------- | ------------- |
-| POSTGRESQL_WORKERS    | The number of citus workers                                   | 8             |
-| MASTER_CPU_REQUEST    | The number of CPUs requested by the Citus coordinator node    | 1             |
-| MASTER_CPU_LIMIT      | The maximum number of CPUs used by the Citus coordinator node | 2             |
-| MASTER_MEMORY_REQUEST | The RAM requested by the Citus coordinator node               | 4096Mi        |
-| MASTER_MEMORY_LIMIT   | The maximum RAM used by the Citus coordinator node            | 8192Mi        |
-| WORKER_CPU_REQUEST    | The number of CPUs requested by each Citus worker node        | 500m          |
-| WORKER_CPU_LIMIT      | The maximum number of CPUs used by each Citus worker node     | 1             |
-| WORKER_MEMORY_REQUEST | The RAM requested by each Citus worker node                   | 2048Mi        |
-| WORKER_MEMORY_LIMIT   | The maximum RAM used by each Citus worker node                | 4096Mi        |
+| Name                  | Description                                                   | Default value                          |
+| --------------------- | ------------------------------------------------------------- | -------------------------------------- |
+| POSTGRESQL_WORKERS    | The number of citus workers                                   | 8 in prod, 4 in other namespaces       |
+| MASTER_CPU_REQUEST    | The number of CPUs requested by the Citus coordinator node    | 1 in prod, 500m in other namespaces    |
+| MASTER_CPU_LIMIT      | The maximum number of CPUs used by the Citus coordinator node | 2                                      |
+| MASTER_MEMORY_REQUEST | The RAM requested by the Citus coordinator node               | 4096Mi                                 |
+| MASTER_MEMORY_LIMIT   | The maximum RAM used by the Citus coordinator node            | 8192Mi                                 |
+| WORKER_CPU_REQUEST    | The number of CPUs requested by each Citus worker node        | 500m in prod, 250m in other namespaces |
+| WORKER_CPU_LIMIT      | The maximum number of CPUs used by each Citus worker node     | 1                                      |
+| WORKER_MEMORY_REQUEST | The RAM requested by each Citus worker node                   | 2048Mi                                 |
+| WORKER_MEMORY_LIMIT   | The maximum RAM used by each Citus worker node                | 4096Mi                                 |
 
 ## Understanding Targets
 
