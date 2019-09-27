@@ -117,13 +117,16 @@ jobs:
 workflows:
   test:
     jobs:
-      - lint
+      - lint:
+          context: cas-pipeline
       - test-unit
       - build:
+          context: cas-pipeline
           requires:
             - lint
             - test-unit
       - test-local-cluster:
+          context: cas-pipeline
           requires:
             - lint
             - test-unit
