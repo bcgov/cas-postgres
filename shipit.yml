@@ -2,4 +2,4 @@ deploy:
   override:
     - git submodule --quiet init
     - git submodule --quiet update --remote
-    - make deploy
+    - make install
