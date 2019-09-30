@@ -2,6 +2,12 @@ version: 2.1
 
 orbs:
   redhat-openshift: circleci/redhat-openshift@0.2.0
+  orb-tools: circleci/orb-tools@8.27.4
+
+executors:
+  default:
+    docker:
+      - image: "circleci/ruby:2.6.4"
 
 jobs:
   test-local-cluster:
@@ -13,9 +19,6 @@ jobs:
           command: |
             git submodule init
             git submodule update --remote
-      - run:
-          name: Copy origin config from .pipeline
-          command: sudo cp -r .pipeline/origin /etc/origin
       - run:
           name: Add Docker registry to /etc/hosts
           command: echo "172.30.1.1 docker-registry.default.svc" | sudo tee -a /etc/hosts
@@ -46,14 +49,17 @@ jobs:
           command: make build
           name: Build image on the cluster
       - run:
-          command: make install_dev
+          command: >
+            make install_dev
+            MASTER_CPU_REQUEST="300m" MASTER_CPU_LIMIT="300m"
+            WORKER_CPU_REQUEST="300m" WORKER_CPU_LIMIT="300m"
+            MASTER_MEMORY_REQUEST="512Mi" MASTER_MEMORY_LIMIT="512Mi"
+            WORKER_MEMORY_REQUEST="512Mi" WORKER_MEMORY_LIMIT="512Mi"
+            POSTGRESQL_WORKERS=2
           name: Deploy to dev
       - run:
-          command: make install_test
-          name: Deploy to test
-      - run:
-          command: make install_prod
-          name: Deploy to prod
+          command: make test_e2e OC_PROJECT=wksv3k-dev
+          name: Run e2e tests on dev
 
   lint:
     executor: redhat-openshift/default
@@ -94,13 +100,33 @@ jobs:
           command: make build
           name: Build image on the remote cluster
 
+  test-unit:
+    executor: default
+    steps:
+      - orb-tools/install-bats
+      - checkout
+      - run:
+          name: Pull Submodules
+          command: |
+            git submodule init
+            git submodule update --remote
+      - run:
+          command: make test_unit
+          name: Run unit tests via make
+
 workflows:
   test:
     jobs:
-      - lint
+      - lint:
+          context: cas-pipeline
+      - test-unit
       - build:
+          context: cas-pipeline
           requires:
             - lint
+            - test-unit
       - test-local-cluster:
+          context: cas-pipeline
           requires:
             - lint
+            - test-unit

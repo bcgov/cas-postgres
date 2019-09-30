@@ -3,7 +3,25 @@ PATHFINDER_PREFIX := wksv3k
 PROJECT_PREFIX := cas-
 
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
+PROJECT_FOLDER := $(abspath $(realpath $(lastword $(MAKEFILE_LIST)))/../)
 include .pipeline/*.mk
+
+# We define the default values of the template variables here to make them available in the lint target.
+POSTGRESQL_WORKERS="4"
+MASTER_CPU_REQUEST="500m"
+MASTER_CPU_LIMIT="2"
+MASTER_MEMORY_REQUEST="4096Mi"
+MASTER_MEMORY_LIMIT="8192Mi"
+WORKER_CPU_REQUEST="250m"
+WORKER_CPU_LIMIT="1"
+WORKER_MEMORY_REQUEST="2048Mi"
+WORKER_MEMORY_LIMIT="4096Mi"
+
+OC_TEMPLATE_VARS += POSTGRESQL_WORKERS="$(POSTGRESQL_WORKERS)"
+OC_TEMPLATE_VARS += MASTER_CPU_REQUEST=$(MASTER_CPU_REQUEST) MASTER_CPU_LIMIT=$(MASTER_CPU_LIMIT)
+OC_TEMPLATE_VARS += MASTER_MEMORY_REQUEST=$(MASTER_MEMORY_REQUEST) MASTER_MEMORY_LIMIT=$(MASTER_MEMORY_LIMIT)
+OC_TEMPLATE_VARS += WORKER_CPU_REQUEST=$(WORKER_CPU_REQUEST) WORKER_CPU_LIMIT=$(WORKER_CPU_LIMIT)
+OC_TEMPLATE_VARS += WORKER_MEMORY_REQUEST=$(WORKER_MEMORY_REQUEST) WORKER_MEMORY_LIMIT=$(WORKER_MEMORY_LIMIT)
 
 .PHONY: help
 help: $(call make_help,help,Explains how to use this Makefile)
@@ -40,13 +58,36 @@ build: OC_PROJECT=$(OC_TOOLS_PROJECT)
 build: whoami
 	$(call oc_build,$(PROJECT_PREFIX)postgres)
 
+# The != operator assigns the ouput of a bash command to the variable, this allows us to override the
+# default value depending on the value OC_PROJECT in the install target
 .PHONY: install
-install: OC_TEMPLATE_VARS += POSTGRESQL_PASSWORD=$(shell openssl rand -base64 32 | tr -d /=+ | cut -c -16 | base64) POSTGRESQL_USER=$(shell echo cas-postgres | base64) POSTGRESQL_DBNAME=$(shell echo ggircs | base64)
+install: POSTGRESQL_WORKERS != if [ "$(OC_PROJECT)" == "$(OC_PROD_PROJECT)" ]; then echo 8; else echo 4; fi;
+install: MASTER_CPU_REQUEST != if [ "$(OC_PROJECT)" == "$(OC_PROD_PROJECT)" ]; then echo 1; else echo "500m"; fi;
+install: WORKER_CPU_REQUEST != if [ "$(OC_PROJECT)" == "$(OC_PROD_PROJECT)" ]; then echo "500m"; else echo "250m"; fi;
+install: POSTGRESQL_ADMIN_PASSWORD=$(shell openssl rand -base64 32 | tr -d /=+ | cut -c -16 | base64)
+install: OC_TEMPLATE_VARS += POSTGRESQL_ADMIN_PASSWORD="$(POSTGRESQL_ADMIN_PASSWORD)"
 install: whoami
 	$(call oc_create_secrets)
 	$(call oc_promote,$(PROJECT_PREFIX)postgres)
 	$(call oc_deploy)
-	$(call oc_wait_for_deploy_ready,$(PROJECT_PREFIX)postgres)
+	$(call oc_wait_for_deploy_ready,$(PROJECT_PREFIX)postgres-master)
+	@@echo "TODO: wait for statefulset to be ready"
+	@@echo "waiting for all $(PROJECT_PREFIX)postgres-workers to be connected to $(PROJECT_PREFIX)postgres-master..."; \
+		POD=$$($(OC) -n $(OC_PROJECT) get pods --selector deploymentconfig=$(PROJECT_PREFIX)postgres-master --field-selector status.phase=Running -o name | cut -d '/' -f 2 ); \
+		AVAILABLE_COUNT="-1"; \
+		while [ "$(POSTGRESQL_WORKERS)" != "$$AVAILABLE_COUNT" ]; do \
+			AVAILABLE_COUNT="$$($(OC) -n $(OC_PROJECT) exec $$POD -- psql -qtA -v "ON_ERROR_STOP=1" -c "select count(success) from run_command_on_workers('select true') where success = true;")"; \
+			echo "connected nodes: $$AVAILABLE_COUNT"; \
+			if [ "$(POSTGRESQL_WORKERS)" != "$$AVAILABLE_COUNT" ]; then \
+				sleep 5; \
+			fi; \
+		done; \
+		if [ "$(POSTGRESQL_WORKERS)" != "$$($(OC) -n $(OC_PROJECT) exec $$POD -- psql -qtA -v "ON_ERROR_STOP=1" -c "select count(isactive) from pg_dist_node where isactive = true;")" ]; then \
+			echo "list configured workers..."; \
+			$(OC) -n $(OC_PROJECT) exec $$POD -- psql -c "select * from pg_dist_node;"; \
+			echo "try connecting to all enabled workers..."; \
+			$(OC) -n $(OC_PROJECT) exec $$POD -- psql -c "select * from run_command_on_workers('select true');"; \
+		fi;
 
 .PHONY: install_dev
 install_dev: OC_PROJECT=$(OC_DEV_PROJECT)
@@ -70,28 +111,6 @@ provision:
 	$(call oc_new_project,$(OC_TEST_PROJECT))
 	$(call oc_new_project,$(OC_DEV_PROJECT))
 	$(call oc_new_project,$(OC_PROD_PROJECT))
-
-.PHONY: authorize
-authorize: OC_PROJECT=$(OC_TOOLS_PROJECT)
-authorize:
-	$(call switch_project)
-	@@for FILE in $(shell $(FIND) openshift/authorize/role -name \*.yml -print); do \
-			for PROJECT in $(OC_TOOLS_PROJECT) $(OC_TEST_PROJECT) $(OC_DEV_PROJECT) $(OC_PROD_PROJECT); do \
-				$(call oc_apply,$$FILE,$(OC_TEMPLATE_VARS),$$PROJECT); \
-			done; \
-		done;
-	$(call oc_create,$(OC_PROJECT),serviceaccount,$(PROJECT_PREFIX)circleci)
-	$(OC) -n $(OC_PROJECT) policy add-role-to-user $(PROJECT_PREFIX)linter system:serviceaccount:$(OC_PROJECT):$(PROJECT_PREFIX)circleci --role-namespace=$(OC_PROJECT)
-	$(OC) -n $(OC_PROJECT) policy add-role-to-user $(PROJECT_PREFIX)builder system:serviceaccount:$(OC_PROJECT):$(PROJECT_PREFIX)circleci --role-namespace=$(OC_PROJECT)
-	$(call oc_create,$(OC_PROJECT),serviceaccount,$(PROJECT_PREFIX)shipit)
-	$(OC) -n $(OC_TOOLS_PROJECT) policy add-role-to-user $(PROJECT_PREFIX)deployer system:serviceaccount:$(OC_TOOLS_PROJECT):$(PROJECT_PREFIX)shipit --role-namespace=$(OC_TOOLS_PROJECT)
-	$(OC) -n $(OC_TEST_PROJECT) policy add-role-to-user $(PROJECT_PREFIX)deployer system:serviceaccount:$(OC_TOOLS_PROJECT):$(PROJECT_PREFIX)shipit --role-namespace=$(OC_TEST_PROJECT)
-	$(OC) -n $(OC_DEV_PROJECT) policy add-role-to-user $(PROJECT_PREFIX)deployer system:serviceaccount:$(OC_TOOLS_PROJECT):$(PROJECT_PREFIX)shipit --role-namespace=$(OC_DEV_PROJECT)
-	$(OC) -n $(OC_PROD_PROJECT) policy add-role-to-user $(PROJECT_PREFIX)deployer system:serviceaccount:$(OC_TOOLS_PROJECT):$(PROJECT_PREFIX)shipit --role-namespace=$(OC_PROD_PROJECT)
-
-# oc get clusterrole
-# oc describe clusterrole.rbac
-# ssh -L 8443:127.0.0.1:8443 -p 54782 35.229.72.44
 
 OC_CIRCLECI_SECRET=$(shell $(OC) -n $(OC_PROJECT) describe sa $(PROJECT_PREFIX)circleci | awk '$$1 == "Mountable" { print $$3 }')
 OC_CIRCLECI_TOKEN=$(shell $(OC) -n $(OC_PROJECT) get secret $(OC_CIRCLECI_SECRET) -o=template --template '{{base64decode .data.token}}')
@@ -123,3 +142,17 @@ scan:
 .PHONY: old_tags
 old_tags:
 	oc get is/cas-postgres -o go-template='{{range .status.tags}}{{$$tag := .tag}}{{range .items}}{{.created}}{{"\t"}}{{$$tag}}{{"\n"}}{{end}}{{end}}' | sort -r | tail -n +8 | awk '{print $$2}'
+
+ifeq ($(MAKECMDGOALS),$(filter $(MAKECMDGOALS),test_e2e test_unit))
+include $(PROJECT_FOLDER)/.pipeline/test/bats.mk
+endif
+
+
+.PHONY: test_e2e
+test_e2e: # https://github.com/bats-core/bats-core
+	$(call bats_test,$(call make_recursive_wildcard,$(PROJECT_FOLDER)/test/e2e,*.bats))
+
+.PHONY: test_unit
+test_unit: # https://github.com/bats-core/bats-core
+	$(call bats_test,$(call make_recursive_wildcard,$(PROJECT_FOLDER)/test/unit,*.bats))
+

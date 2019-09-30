@@ -1,0 +1,61 @@
+#!/bin/bash
+
+
+# =============================================================================
+# Usage:
+# -----------------------------------------------------------------------------
+usage() {
+    cat << EOF
+$0
+
+Creates a database and a user with a generated password.
+Grants all privileges on the database to the created user.
+
+Usage: $0 USER DATABASE PASSWORD_LENGTH=16
+EOF
+    exit 1
+}
+
+if [ "$#" -ne 2 ] && [ "$#" -ne 3 ]; then
+    echo "Passed $# parameters. Expected 2 or 3."
+    usage
+fi
+
+password=$(< /dev/urandom tr -dc _A-Za-z0-9- | head -c"${3:-16}";echo;)
+user=$1
+db=$2
+
+_psql() {
+    psql_out=$(PGOPTIONS='--client-min-messages=warning' psql -qtA --set ON_ERROR_STOP=1 "$@")
+}
+
+create_db_query="create database $db;"
+read -r -d '' create_user_query<<EOF
+create user $user with encrypted password '$password';
+revoke all on database $db from public;
+revoke all on database postgres from $user;
+grant all on database $db to $user;
+alter database $db owner to $user;
+EOF
+escaped_create_user_query="${create_user_query//\'/\'\'}"
+
+read -ra worker_nodes<<<"$(_psql -c 'select node_name from master_get_active_worker_nodes();')"
+
+_psql << EOF
+    $create_db_query
+    select * from run_command_on_workers('$create_db_query');
+EOF
+
+_psql << EOF
+    $create_user_query
+    select * from run_command_on_workers('$escaped_create_user_query');
+EOF
+
+_psql -d "$db" -c "create extension citus;"
+
+for worker_node in "${worker_nodes[@]}"
+do
+ _psql -d "$db" -c "select * from master_add_node('$worker_node', 5432);"
+done
+
+echo -n "$password"

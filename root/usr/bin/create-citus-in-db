@@ -1,0 +1,23 @@
+#!/bin/bash
+
+
+# =============================================================================
+# Usage:
+# -----------------------------------------------------------------------------
+usage() {
+    cat << EOF
+$0
+
+Creates the citus extension in the provided database.
+
+Usage: $0 DATABASE
+EOF
+    exit 1
+}
+
+if [ "$#" -ne 1 ]; then
+    echo "Passed $# parameters. Expected 1."
+    usage
+fi
+
+psql -qtA -v "ON_ERROR_STOP=1" -d "$1" <<< "CREATE EXTENSION citus;"

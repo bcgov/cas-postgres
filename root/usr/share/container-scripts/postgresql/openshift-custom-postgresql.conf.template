@@ -19,3 +19,6 @@ shared_buffers = ${POSTGRESQL_SHARED_BUFFERS}
 
 # Sets the planner's assumption about the effective size of the disk cache that is available to a single query
 effective_cache_size = ${POSTGRESQL_EFFECTIVE_CACHE_SIZE}
+
+# Sets one or more shared libraries to be preloaded at server start.
+shared_preload_libraries = ${POSTGRESQL_SHARED_PRELOAD_LIBRARIES}

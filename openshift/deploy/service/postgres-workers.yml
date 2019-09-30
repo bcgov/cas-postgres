@@ -1,0 +1,22 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+
+parameters:
+  - description: Prefix to prepend to object name.
+    displayName: Prefix
+    name: PREFIX
+    required: true
+
+objects:
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: ${PREFIX}postgres-workers
+      labels:
+        app: ${PREFIX}postgres-workers
+    spec:
+      selector:
+        app: ${PREFIX}postgres-workers
+      clusterIP: None
+      ports:
+      - port: 5432

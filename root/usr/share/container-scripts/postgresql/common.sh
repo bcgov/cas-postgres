@@ -1,6 +1,7 @@
 # Configuration settings.
 export POSTGRESQL_MAX_CONNECTIONS=${POSTGRESQL_MAX_CONNECTIONS:-100}
 export POSTGRESQL_MAX_PREPARED_TRANSACTIONS=${POSTGRESQL_MAX_PREPARED_TRANSACTIONS:-0}
+export POSTGRESQL_SHARED_PRELOAD_LIBRARIES=${POSTGRESQL_SHARED_PRELOAD_LIBRARIES:-'citus'}
 
 # Perform auto-tuning based on the container cgroups limits (only when the
 # limits are set).
@@ -161,16 +162,28 @@ function initialize_database() {
 include '${POSTGRESQL_CONFIG_FILE}'
 EOF
 
-  # Access control configuration.
+  # Access control configuration. This overrides the default configuration
   # FIXME: would be nice-to-have if we could allow connections only from
   #        specific hosts / subnet
-  cat >> "$PGDATA/pg_hba.conf" <<EOF
-
+  cat > "$PGDATA/pg_hba.conf" <<EOF
 #
 # Custom OpenShift configuration starting at this point.
 #
 
+# TYPE DATABASE USER ADDRESS METHOD
+
+# trust all local connections for the postgres user
+local all postgres  trust
+host all postgres 127.0.0.1/32 trust
+host all postgres ::1/128 trust
+
+# Allow replication connections from localhost, for the postgres user
+local replication postgres trust
+host replication postgres 127.0.0.1/32 trust
+host replication postgres ::1/128 trust
+
 # Allow connections from all hosts.
+local all all md5
 host all all all md5
 
 # Allow replication connections from all hosts.
@@ -179,11 +192,6 @@ EOF
 }
 
 function create_users() {
-  if [[ ",$postinitdb_actions," = *,simple_db,* ]]; then
-    createuser "$POSTGRESQL_USER"
-    createdb --owner="$POSTGRESQL_USER" "$POSTGRESQL_DATABASE"
-  fi
-
   if [ -v POSTGRESQL_MASTER_USER ]; then
     createuser "$POSTGRESQL_MASTER_USER"
   fi

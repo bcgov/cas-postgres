@@ -2,50 +2,50 @@ apiVersion: template.openshift.io/v1
 kind: Template
 
 parameters:
-- description: Prefix to prepend to object name.
-  displayName: Prefix
-  name: PREFIX
-  required: true
-- description: SHA1 of git revision to be deployed.
-  displayName: Git SHA1
-  name: GIT_SHA1
-  required: true
+  - description: Prefix to prepend to object name.
+    displayName: Prefix
+    name: PREFIX
+    required: true
+  - description: SHA1 of git revision to be deployed.
+    displayName: Git SHA1
+    name: GIT_SHA1
+    required: true
 
 objects:
-- apiVersion: build.openshift.io/v1
-  kind: BuildConfig
-  metadata:
-    labels:
-      beta.kubernetes.io/os: linux
-    name: ${PREFIX}postgres
-  spec:
-    failedBuildsHistoryLimit: 5
-    nodeSelector:
-      beta.kubernetes.io/os: linux
-    output:
-      to:
-        kind: ImageStreamTag
-        name: '${PREFIX}postgres:${GIT_SHA1}'
-    resources:
-      limits:
-        cpu: '1'
-        memory: 512Mi
-      requests:
-        cpu: 750m
-        memory: 256Mi
-    runPolicy: Parallel
-    source:
-      git:
-        ref: ${GIT_SHA1}
-        uri: 'https://github.com/bcgov/cas-postgres.git'
-      type: Git
-    strategy:
-      dockerStrategy:
-        noCache: true
-        pullSecret:
-          name: io-redhat-registry
-      type: Docker
-    successfulBuildsHistoryLimit: 5
-    triggers: []
-  status:
-    lastVersion: 0
+  - apiVersion: build.openshift.io/v1
+    kind: BuildConfig
+    metadata:
+      labels:
+        beta.kubernetes.io/os: linux
+      name: ${PREFIX}postgres
+    spec:
+      failedBuildsHistoryLimit: 5
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+      output:
+        to:
+          kind: ImageStreamTag
+          name: "${PREFIX}postgres:${GIT_SHA1}"
+      resources:
+        limits:
+          cpu: "1"
+          memory: 512Mi
+        requests:
+          cpu: 750m
+          memory: 256Mi
+      runPolicy: Parallel
+      source:
+        git:
+          ref: ${GIT_SHA1}
+          uri: "https://github.com/bcgov/cas-postgres.git"
+        type: Git
+      strategy:
+        dockerStrategy:
+          noCache: false
+          pullSecret:
+            name: io-redhat-registry
+        type: Docker
+      successfulBuildsHistoryLimit: 5
+      triggers: []
+    status:
+      lastVersion: 0
