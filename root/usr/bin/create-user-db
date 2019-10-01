@@ -26,10 +26,9 @@ user=$1
 db=$2
 
 _psql() {
-    PGOPTIONS='--client-min-messages=warning' psql -qtA --set ON_ERROR_STOP=1 "$@"
+    PGOPTIONS='--client-min-messages=warning' psql -qtA --set ON_ERROR_STOP=1 "$@" 2>&1
 }
 
-create_db_query="create database $db;"
 read -r -d '' create_db_query_workers<<EOF
 select nodename, success, result from run_command_on_workers('$create_db_query');
 EOF
@@ -52,7 +51,7 @@ if [ "$coordinator_out" == "ERROR:  database \"$db\" already exists" ]; then
     echo "Database \"$db\" already exists on coordinator node"
 elif [[ $coordinator_out == ERROR* ]]; then
     echo "$coordinator_out"
-    #exit 1
+    exit 1
 fi
 
 # Create DB on the workers
@@ -65,7 +64,7 @@ do
             echo "Database \"$db\" already exists on worker node ${worker_out_fields[0]}"
         else
             echo "Error on worker ${worker_out_fields[0]}: ${worker_out_fields[2]}"
-            #exit 1
+            exit 1
         fi
     fi
 done
@@ -75,7 +74,7 @@ if [ "$coordinator_out" == "ERROR:  role \"$user\" already exists" ]; then
     echo "User \"$user\" already exists on coordinator node"
 elif [[ $coordinator_out == ERROR* ]]; then
     echo "$coordinator_out"
-    #exit 1
+    exit 1
 fi
 
 # Create user on the workers
@@ -88,7 +87,7 @@ do
             echo "User \"$user\" already exists on worker node ${worker_out_fields[0]}"
         else
             echo "Error on worker ${worker_out_fields[0]}: ${worker_out_fields[2]}"
-            #exit 1
+            exit 1
         fi
     fi
 done
