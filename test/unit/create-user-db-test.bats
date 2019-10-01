@@ -13,24 +13,24 @@ teardown() {
     fi
 }
 
-@test "create-user-db creates a user, db, and prints a password" {
+@test "create-user-db calls psql" {
 
-    USER='foo'
-    DB='bar'
-    PASS_LEN=42
+    user='foo'
+    db='bar'
+    password='baz'
     shellmock_expect psql --type regex --match ".*" --output "called psql"
-    run $CREATE_USER $USER $DB $PASS_LEN
+    run $CREATE_USER $user $db $password
     echo "${lines[@]}" # prints the lines if test fails
 
-    [ "${#lines[0]}" -eq $PASS_LEN ]
+    [ "${lines[0]}" == "called psql" ]
 }
 
-@test "create-user-db prints a password of length 16 by default" {
-    USER='foo'
-    DB='bar'
+@test "create-user-db prints an error if less than three params are passed" {
+    user='foo'
+    db='bar'
     shellmock_expect psql --type regex --match ".*" --output "called psql"
-    run $CREATE_USER $USER $DB
+    run $CREATE_USER $user $db
     echo "${lines[@]}" # prints the lines if test fails
 
-    [ "${#lines[0]}" -eq 16 ]
+    [ "${lines[0]}" == "Passed 2 parameters. Expected 3." ]
 }

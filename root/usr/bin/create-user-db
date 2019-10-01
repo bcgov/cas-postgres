@@ -8,25 +8,25 @@ usage() {
     cat << EOF
 $0
 
-Creates a database and a user with a generated password.
+Creates a database and a user with the given password.
 Grants all privileges on the database to the created user.
 
-Usage: $0 USER DATABASE PASSWORD_LENGTH=16
+Usage: $0 USER DATABASE PASSWORD
 EOF
     exit 1
 }
 
-if [ "$#" -ne 2 ] && [ "$#" -ne 3 ]; then
-    echo "Passed $# parameters. Expected 2 or 3."
+if [ "$#" -ne 3 ]; then
+    echo "Passed $# parameters. Expected 3."
     usage
 fi
 
-password=$(< /dev/urandom tr -dc _A-Za-z0-9- | head -c"${3:-16}";echo;)
+password=$3
 user=$1
 db=$2
 
 _psql() {
-    psql_out=$(PGOPTIONS='--client-min-messages=warning' psql -qtA --set ON_ERROR_STOP=1 "$@")
+    PGOPTIONS='--client-min-messages=warning' psql -qtA --set ON_ERROR_STOP=1 "$@"
 }
 
 create_db_query="create database $db;"
@@ -57,5 +57,3 @@ for worker_node in "${worker_nodes[@]}"
 do
  _psql -d "$db" -c "select * from master_add_node('$worker_node', 5432);"
 done
-
-echo -n "$password"

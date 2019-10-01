@@ -1,32 +1,32 @@
 #!/usr/bin/env bats
 
 setup() {
-  USER='foo'
-  DB='foodb'
-  PASS_LEN=32
+  user='foo'
+  db='foodb'
+  password='foopass'
   fixture="${BATS_TEST_DIRNAME}/create-user-db-test.mk"
 }
 
 teardown() {
-  make --no-print-directory -f "${fixture}" drop-user-db USER="$USER" DB="$DB"
+  make --no-print-directory -f "${fixture}" drop-user-db USER="$user" DB="$db"
 }
 
-@test "create-user-db prints a password" {
-  run make --no-print-directory -f "${fixture}" create-user-db USER="$USER" DB="$DB" PASS_LEN="$PASS_LEN"
+@test "create-user-db exits with code 0" {
+  run make --no-print-directory -f "${fixture}" create-user-db USER="$user" DB="$db" PASS="$password"
   echo "${lines[@]}" # prints the lines if test fails
-  [ "${#lines[0]}" -eq "$PASS_LEN" ]
+  [ "${status}" -eq 0 ]
 }
 
 @test "create-user-db creates a user that can log in to the db" {
-  PASS=$(make --no-print-directory -f "${fixture}" create-user-db USER="$USER" DB="$DB" PASS_LEN="$PASS_LEN")
-  run make --no-print-directory -f "${fixture}" test-user-password USER="$USER" DB="$DB" PASS="$PASS"
+  $(make --no-print-directory -f "${fixture}" create-user-db USER="$user" DB="$db" PASS="$password")
+  run make --no-print-directory -f "${fixture}" test-user-password USER="$user" DB="$db" PASS="$password"
   echo "${lines[@]}" # prints the lines if test fails
   [ "$(echo -e "${lines[0]}" | tr -d '[:space:]')" == "ok" ]
 }
 
 @test "create-user-db creates a user that fails to log in with the wrong password" {
-  PASS=$(make --no-print-directory -f "${fixture}" create-user-db USER="$USER" DB="$DB" PASS_LEN="$PASS_LEN")
-  run make --no-print-directory -f "${fixture}" test-user-password USER="$USER" DB="$DB" PASS="wrongpassword"
+  $(make --no-print-directory -f "${fixture}" create-user-db USER="$user" DB="$db" PASS="$password")
+  run make --no-print-directory -f "${fixture}" test-user-password USER="$user" DB="$db" PASS="wrongpassword"
   echo "${lines[@]}" # prints the lines if test fails
-  [ "${lines[0]}" == "psql: FATAL:  password authentication failed for user \"$USER\"" ]
+  [ "${lines[0]}" == "psql: FATAL:  password authentication failed for user \"$user\"" ]
 }
