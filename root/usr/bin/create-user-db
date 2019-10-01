@@ -56,10 +56,10 @@ for worker_out in "${create_db_workers_out[@]}"
 do
     IFS='|' read -r -a worker_out_fields <<< "$worker_out"
     if [ "${worker_out_fields[1]}" == "f" ]; then
-        if [ "${worker_out_fields[1]}" == "ERROR:  database \"$db\" already exists" ]; then
+        if [ "${worker_out_fields[2]}" == "ERROR:  database \"$db\" already exists" ]; then
             echo "Database \"$db\" already exists on worker node ${worker_out_fields[0]}"
         else
-            echo "Error on worker ${worker_out_fields[0]}: ${worker_out_fields[1]}"
+            echo "Error on worker ${worker_out_fields[0]}: ${worker_out_fields[2]}"
             exit 1
         fi
     fi
@@ -74,27 +74,21 @@ elif [[ $coordinator_out == ERROR* ]]; then
 fi
 
 # Create user on the workers
-read -ra create_db_workers_out<<<"$(_psql -c $'select nodename, success, result from run_command_on_workers(\'$escaped_create_user_query\')')"
+read -ra create_db_workers_out<<<"$(_psql -c 'select nodename, success, result from run_command_on_workers('"'""$escaped_create_user_query""'"')')"
 for worker_out in "${create_db_workers_out[@]}"
 do
     IFS='|' read -r -a worker_out_fields <<< "$worker_out"
     if [ "${worker_out_fields[1]}" == "f" ]; then
-        if [ "${worker_out_fields[1]}" == "ERROR:  role \"$user\" already exists" ]; then
+        if [ "${worker_out_fields[2]}" == "ERROR:  role \"$user\" already exists" ]; then
             echo "User \"$user\" already exists on worker node ${worker_out_fields[0]}"
         else
-            echo "Error on worker ${worker_out_fields[0]}: ${worker_out_fields[1]}"
+            echo "Error on worker ${worker_out_fields[0]}: ${worker_out_fields[2]}"
             exit 1
         fi
     fi
 done
 
-coordinator_out=$(_psql -d "$db" -c "create extension citus;")
-if [ "$coordinator_out" == "ERROR:  extension \"citus\" already exists" ]; then
-    echo "Extension citus already exists on coordinator node"
-elif [[ $coordinator_out == ERROR* ]]; then
-    echo "$coordinator_out"
-    exit 1
-fi
+_psql -d "$db" -c "create extension if not exists citus;"
 
 # Register the workers in the newly created DB
 for worker_node in "${worker_nodes[@]}"
