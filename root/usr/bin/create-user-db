@@ -29,6 +29,7 @@ _psql() {
     PGOPTIONS='--client-min-messages=warning' psql -qtA --set ON_ERROR_STOP=1 "$@" 2>&1
 }
 
+create_db_query="create database $db;"
 read -r -d '' create_db_query_workers<<EOF
 select nodename, success, result from run_command_on_workers('$create_db_query');
 EOF
