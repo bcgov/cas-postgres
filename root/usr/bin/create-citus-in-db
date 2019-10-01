@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 
 # =============================================================================
 # Usage:
@@ -20,4 +21,4 @@ if [ "$#" -ne 1 ]; then
     usage
 fi
 
-psql -qtA -v "ON_ERROR_STOP=1" -d "$1" <<< "CREATE EXTENSION citus;"
+psql -qtA -v "ON_ERROR_STOP=1" -d "$1" <<< "create extension if not exists citus;"
