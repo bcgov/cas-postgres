@@ -51,7 +51,7 @@ elif [[ $coordinator_out == ERROR* ]]; then
 fi
 
 # Create DB on the workers
-read -ra create_db_workers_out<<<"$(_psql -c "select nodename, success, result from run_command_on_workers(\'$create_db_query\');")"
+read -ra create_db_workers_out<<<"$(_psql -c $'select nodename, success, result from run_command_on_workers(\'$create_db_query\');')"
 for worker_out in "${create_db_workers_out[@]}"
 do
     IFS='|' read -r -a worker_out_fields <<< "$worker_out"
@@ -65,13 +65,6 @@ do
     fi
 done
 
-# Register the workers in the newly created DB
-for worker_node in "${worker_nodes[@]}"
-do
- _psql -d "$db" -c "select master_add_node('$worker_node', 5432);"
-done
-
-
 coordinator_out=$(_psql -c "$create_user_query")
 if [ "$coordinator_out" == "ERROR:  role \"$user\" already exists" ]; then
     echo "User \"$user\" already exists on coordinator node"
@@ -81,7 +74,7 @@ elif [[ $coordinator_out == ERROR* ]]; then
 fi
 
 # Create user on the workers
-read -ra create_db_workers_out<<<"$(_psql -c "select nodename, success, result from run_command_on_workers(\'$escaped_create_user_query\')")"
+read -ra create_db_workers_out<<<"$(_psql -c $'select nodename, success, result from run_command_on_workers(\'$escaped_create_user_query\')')"
 for worker_out in "${create_db_workers_out[@]}"
 do
     IFS='|' read -r -a worker_out_fields <<< "$worker_out"
@@ -103,6 +96,7 @@ elif [[ $coordinator_out == ERROR* ]]; then
     exit 1
 fi
 
+# Register the workers in the newly created DB
 for worker_node in "${worker_nodes[@]}"
 do
  _psql -d "$db" -c "select master_add_node('$worker_node', 5432);"
