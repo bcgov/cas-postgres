@@ -24,6 +24,13 @@ teardown() {
   [ "$(echo -e "${lines[0]}" | tr -d '[:space:]')" == "ok" ]
 }
 
+@test "create-user-db is idempotent" {
+  make --no-print-directory -f "${fixture}" create-user-db USER="$user" DB="$db" PASS="$password"
+  run make --no-print-directory -f "${fixture}" create-user-db USER="$user" DB="$db" PASS="$password"
+  echo "${lines[@]}" # prints the lines if test fails
+  [ "${status}" -eq 0 ]
+}
+
 @test "create-user-db creates a user that fails to log in with the wrong password" {
   make --no-print-directory -f "${fixture}" create-user-db USER="$user" DB="$db" PASS="$password"
   run make --no-print-directory -f "${fixture}" test-user-password USER="$user" DB="$db" PASS="wrongpassword"
