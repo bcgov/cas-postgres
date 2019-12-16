@@ -5,7 +5,7 @@ orbs:
   orb-tools: circleci/orb-tools@8.27.4
 
 executors:
-  default:
+  ruby:
     docker:
       - image: "circleci/ruby:2.6.4"
 
@@ -101,7 +101,7 @@ jobs:
           name: Build image on the remote cluster
 
   test-unit:
-    executor: default
+    executor: ruby
     steps:
       - orb-tools/install-bats
       - checkout

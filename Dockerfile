@@ -63,8 +63,8 @@ RUN INSTALL_PKGS="nss_wrapper make gcc vim-common kernel-headers zlib-devel libc
 RUN curl https://ftp.postgresql.org/pub/source/v11.4/postgresql-11.4.tar.gz | tar xz && \
     pushd postgresql-11.4 && \
     ./configure --without-readline --with-libxml && \
-    make && \
-    make install && \
+    make world && \
+    make install-world && \
     popd && \
     rm -r postgresql-11.4 && \
     localedef -f UTF-8 -i en_US en_US.UTF-8 && \
