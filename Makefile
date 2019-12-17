@@ -149,10 +149,12 @@ endif
 
 
 .PHONY: test_e2e
-test_e2e: # https://github.com/bats-core/bats-core
-	$(call bats_test,$(call make_recursive_wildcard,$(PROJECT_FOLDER)/test/e2e,*.bats))
+test_e2e: whoami
+test_e2e: OC_PROJECT=$(OC_DEV_PROJECT)
+test_e2e:
+	@@export OC="$(OC)" OC_PROJECT="$(OC_PROJECT)" PROJECT_PREFIX="$(PROJECT_PREFIX)"; \
+		bats $(PROJECT_FOLDER)/test/e2e/**/*.bats;
 
 .PHONY: test_unit
 test_unit: # https://github.com/bats-core/bats-core
-	$(call bats_test,$(call make_recursive_wildcard,$(PROJECT_FOLDER)/test/unit,*.bats))
-
+	$(call bats_test,$(PROJECT_FOLDER)/test/unit)
