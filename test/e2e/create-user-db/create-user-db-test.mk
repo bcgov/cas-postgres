@@ -3,7 +3,7 @@ include $(abspath $(realpath $(lastword $(MAKEFILE_LIST)))/../../../../.pipeline
 
 .PHONY: create-user-db
 create-user-db:
-	$(call oc_exec_all_pods,cas-postgres-master,create-user-db --u $(USER) -d $(DB) -p $(PASS) --owner --enable-citus)
+	$(call oc_exec_all_pods,cas-postgres-master,create-user-db -u $(USER) -d $(DB) -p $(PASS) --owner --enable-citus)
 	$(call oc_exec_all_pods,cas-postgres-workers,create-citus-in-db $(DB))
 
 .PHONY: drop-user-db
