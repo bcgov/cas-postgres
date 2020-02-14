@@ -149,6 +149,7 @@ endif
 
 
 .PHONY: test_e2e
+test_e2e: $(call make_help,test_e2e,Runs e2e tests with bats)
 test_e2e: whoami
 test_e2e: OC_PROJECT=$(OC_DEV_PROJECT)
 test_e2e:
@@ -156,5 +157,6 @@ test_e2e:
 		bats $(PROJECT_FOLDER)/test/e2e/**/*.bats;
 
 .PHONY: test_unit
+test_unit: $(call make_help,test_unit,Runs unit tests with bats)
 test_unit: # https://github.com/bats-core/bats-core
 	$(call bats_test,$(PROJECT_FOLDER)/test/unit)
