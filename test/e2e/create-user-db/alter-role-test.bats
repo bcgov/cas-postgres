@@ -17,6 +17,6 @@ teardown() {
 @test "alter-role alters a user & adds createrole permission" {
   run make --no-print-directory -f "${fixture}" alter-role USER="$user" PRIVILEGE="$privilege"
   run make --no-print-directory -f "${fixture}" test-alter-role USER="$user" DB="$db" PASS="$password"
-  echo "${lines[@]}" # prints the lines if test fails
-  [ "${lines[0]}" == "t" ]
+  echo "$output" # prints the lines if test fails
+  [[ "${lines[0]}" =~ "t" ]]
 }
