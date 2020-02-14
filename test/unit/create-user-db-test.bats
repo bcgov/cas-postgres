@@ -19,18 +19,17 @@ teardown() {
     db='bar'
     password='baz'
     shellmock_expect psql --type regex --match ".*" --output "called psql"
-    run "$create_user" $user $db $password true
-    echo "${lines[@]}" # prints the lines if test fails
+    run "$create_user" --user $user --db $db --password $password --enable-citus --owner
+    echo "$output" # prints the lines if test fails
     [ $status -eq 0 ]
     [ "${lines[0]}" == "called psql" ]
 }
 
-@test "create-user-db prints an error if less than three params are passed" {
+@test "create-user-db prints an error if --password is missing" {
     user='foo'
     db='bar'
-    shellmock_expect psql --type regex --match ".*" --output "called psql"
-    run "$create_user" $user $db
-    echo "${lines[@]}" # prints the lines if test fails
+    run "$create_user" --user $user --db
+    echo "$output" # prints the lines if test fails
     [ $status -eq 1 ]
-    [ "${lines[0]}" == "Passed 2 parameters. Expected 3 or 4." ]
+    [ "${lines[0]}" == "The --password parameter is required." ]
 }
