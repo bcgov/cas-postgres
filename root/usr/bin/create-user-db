@@ -11,7 +11,7 @@ $0
 Creates a database and a user with the given password.
 Grants all privileges on the database to the created user.
 
-Usage: $0 USER DATABASE PASSWORD
+Usage: $0 USER DATABASE PASSWORD ENABLE_CITUS
 EOF
     exit 1
 }
@@ -58,7 +58,6 @@ elif [[ $coordinator_out == ERROR* ]]; then
 fi
 
 if $enable_citus; then
-
     read -r -d '' create_db_query_workers<<EOF
     select nodename, success, result from run_command_on_workers('$create_db_query');
 EOF
