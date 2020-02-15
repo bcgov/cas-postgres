@@ -37,3 +37,13 @@ teardown() {
   echo "${lines[@]}" # prints the lines if test fails
   [ "${lines[0]}" == "psql: FATAL:  password authentication failed for user \"$user\"" ]
 }
+
+
+@test "create-user-db creates a user that only has specific privileges in the specified schemas" {
+  make --no-print-directory -f "${fixture}" create-user-db USER="$user" DB="$db" PASS="$password"
+  make --no-print-directory -f "${fixture}" create-user-db USER="not_the_owner" DB="$db" PASS="qwerty"
+  run make --no-print-directory -f "${fixture}" get-user-tables-privileges USER="not_the_owner" DB="$db" SCHEMA="schema_foo"
+  echo "$output" # prints the lines if test fails
+  [[ "${lines[-2]}" =~ "INSERT" ]]
+  [[ "${lines[-1]}" =~ "SELECT" ]]
+}
