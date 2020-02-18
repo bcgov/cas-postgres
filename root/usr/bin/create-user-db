@@ -111,7 +111,7 @@ elif [[ $coordinator_out == ERROR* ]]; then
   exit 1
 fi
 
-coordinator_out=$(_psql <<< "$create_user_query")
+coordinator_out=$(_psql -d "$db" <<< "$create_user_query")
 if [ "$coordinator_out" == "ERROR:  role \"$user\" already exists" ]; then
   echo "User \"$user\" already exists on coordinator node"
 elif [[ $coordinator_out == ERROR* ]]; then
@@ -142,7 +142,7 @@ EOF
     select nodename, success, result from run_command_on_workers('${create_user_query//\'/\'\'}');
 EOF
     # Create user on the workers
-    mapfile -t create_db_workers_out <<< "$(_psql <<< "$create_user_query_workers")"
+    mapfile -t create_db_workers_out <<< "$(_psql -d "$db" <<< "$create_user_query_workers")"
     for worker_out in "${create_db_workers_out[@]}"
     do
         IFS='|' read -ra worker_out_fields <<< "$worker_out"
