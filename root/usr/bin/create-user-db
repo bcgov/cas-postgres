@@ -48,7 +48,7 @@ while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
     ;;
   --privileges )
     shift
-    IFS=',' read -r -a privileges <<< "$1"
+    privileges="$1"
     ;;
   --schemas )
     shift
@@ -97,7 +97,7 @@ else
   for schema in "${schemas[@]}"
   do
     create_user_query+="grant usage on schema $schema to $user;"
-    create_user_query+="grant ${privileges[*]} on all tables in schema $schema to $user;"
+    create_user_query+="grant $privileges on all tables in schema $schema to $user;"
     create_user_query+="alter default privileges in schema $schema grant ${privileges[*]} on tables to $user;"
   done
 fi

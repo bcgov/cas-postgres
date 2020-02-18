@@ -8,7 +8,12 @@ create-user-db:
 
 .PHONY: create-user-db-privileges
 create-user-db-privileges:
-	$(call oc_exec_all_pods,cas-postgres-master,psql -c "create schema schema_foo;create schema schema_bar;create schema schema_baz;"')
+	$(call oc_exec_all_pods,cas-postgres-master,psql -d $(DB) -c "create schema schema_foo;create schema schema_bar;create schema schema_baz;")
+	## The schemas must have tables for the privileges to appear in the role_table_grants table
+	$(call oc_exec_all_pods,cas-postgres-master,psql -d $(DB) -c "create table schema_foo.foo (blah int);")
+	$(call oc_exec_all_pods,cas-postgres-master,psql -d $(DB) -c "create table schema_bar.foo (blah int);")
+	$(call oc_exec_all_pods,cas-postgres-master,psql -d $(DB) -c "create table schema_baz.foo (blah int);")
+
 	$(call oc_exec_all_pods,cas-postgres-master,create-user-db -u $(USER) -d $(DB) -p $(PASS) --enable-citus --schemas schema_foo,schema_bar --privileges select,insert)
 
 .PHONY: get-user-schema-privileges
