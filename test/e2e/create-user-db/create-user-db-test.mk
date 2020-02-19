@@ -1,6 +1,6 @@
 SHELL := /usr/bin/env bash
 include $(abspath $(realpath $(lastword $(MAKEFILE_LIST)))/../../../../.pipeline/oc.mk)
-
+comma := ,
 .PHONY: create-user-db
 create-user-db:
 	$(call oc_exec_all_pods,cas-postgres-master,create-user-db -u $(USER) -d $(DB) -p $(PASS) --owner --enable-citus)
@@ -14,7 +14,7 @@ create-user-db-privileges:
 	$(call oc_exec_all_pods,cas-postgres-master,psql -d $(DB) -c "create table schema_bar.foo (blah int);")
 	$(call oc_exec_all_pods,cas-postgres-master,psql -d $(DB) -c "create table schema_baz.foo (blah int);")
 
-	$(call oc_exec_all_pods,cas-postgres-master,create-user-db -u $(USER) -d $(DB) -p $(PASS) --enable-citus --schemas schema_foo,schema_bar --privileges select,insert)
+	$(call oc_exec_all_pods,cas-postgres-master,create-user-db -u $(USER) -d $(DB) -p $(PASS) --enable-citus --schemas schema_foo$(comma)schema_bar --privileges select$(comma)insert)
 
 .PHONY: get-user-schema-privileges
 get-user-tables-privileges:
