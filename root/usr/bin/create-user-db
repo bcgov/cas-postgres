@@ -90,15 +90,16 @@ revoke all on database $db from public;
 revoke all on database postgres from $user;
 EOF
 
+set_user_privileges=''
 if $user_is_owner; then
   create_user_query+="grant all on database $db to $user; alter database $db owner to $user;"
 else
   create_user_query+="grant connect on database $db to $user;"
   for schema in "${schemas[@]}"
   do
-    create_user_query+="grant usage on schema $schema to $user;"
-    create_user_query+="grant $privileges on all tables in schema $schema to $user;"
-    create_user_query+="alter default privileges in schema $schema grant ${privileges[*]} on tables to $user;"
+    set_user_privileges+="grant usage on schema $schema to $user;"
+    set_user_privileges+="grant $privileges on all tables in schema $schema to $user;"
+    set_user_privileges+="alter default privileges in schema $schema grant ${privileges[*]} on tables to $user;"
   done
 fi
 
@@ -117,6 +118,11 @@ if [ "$coordinator_out" == "ERROR:  role \"$user\" already exists" ]; then
 elif [[ $coordinator_out == ERROR* ]]; then
   echo "$coordinator_out"
   exit 1
+fi
+
+# set the user schema privileges
+if [ -n "$set_user_privileges" ]; then
+  _psql -d "$db" <<< "$set_user_privileges"
 fi
 
 if $enable_citus; then
@@ -141,6 +147,7 @@ EOF
     read -r -d '' create_user_query_workers<<EOF
     select nodename, success, result from run_command_on_workers('${create_user_query//\'/\'\'}');
 EOF
+
     # Create user on the workers
     mapfile -t create_db_workers_out <<< "$(_psql -d "$db" <<< "$create_user_query_workers")"
     for worker_out in "${create_db_workers_out[@]}"
@@ -155,6 +162,13 @@ EOF
             fi
         fi
     done
+
+    read -r -d '' set_user_privileges_query_workers<<EOF
+    select nodename, success, result from run_command_on_workers('${set_user_privileges//\'/\'\'}');
+EOF
+    if [ -n "$set_user_privileges" ]; then
+      _psql -d "$db" <<< "$set_user_privileges_query_workers"
+    fi
 
     _psql -d "$db" -c "create extension if not exists citus;"
 
