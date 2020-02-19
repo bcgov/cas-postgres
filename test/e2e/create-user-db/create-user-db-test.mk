@@ -18,7 +18,7 @@ create-user-db-privileges:
 
 .PHONY: get-user-schema-privileges
 get-user-tables-privileges:
-	$(call oc_exec_all_pods,cas-postgres-master,psql -d $(DB) -c "select distinct privilege_type from information_schema.role_table_grants where table_schema=\'$(SCHEMA)\' and grantee=\'$(USER)\' order by privilege_type;")
+	$(call oc_exec_all_pods,cas-postgres-master,psql -tq -d $(DB) -c "select distinct privilege_type from information_schema.role_table_grants where table_schema=\'$(SCHEMA)\' and grantee=\'$(USER)\' order by privilege_type;")
 
 .PHONY: drop-user-db
 drop-user-db:
