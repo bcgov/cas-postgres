@@ -17,7 +17,7 @@ objects:
   metadata:
     name: ${PREFIX}postgres-master
   spec:
-    storageClassName: gluster-file-db
+    storageClassName: netapp-block-standard
     accessModes:
       - ReadWriteOnce
     resources:
