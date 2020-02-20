@@ -4,7 +4,7 @@ load ../test_helper
 
 setup() {
     #shellmock_clean
-    CREATE_USER="${BATS_TEST_DIRNAME}/../../root/usr/bin/create-user-db"
+    create_user="${BATS_TEST_DIRNAME}/../../root/usr/bin/create-user-db"
 }
 
 teardown() {
@@ -14,23 +14,22 @@ teardown() {
 }
 
 @test "create-user-db calls psql" {
-
+    # TODO: this unit test doesn't do much. It probably should be improved
     user='foo'
     db='bar'
     password='baz'
     shellmock_expect psql --type regex --match ".*" --output "called psql"
-    run $CREATE_USER $user $db $password
-    echo "${lines[@]}" # prints the lines if test fails
-
+    run "$create_user" --user $user --db $db --password $password --enable-citus --owner
+    echo "$output" # prints the lines if test fails
+    [ $status -eq 0 ]
     [ "${lines[0]}" == "called psql" ]
 }
 
-@test "create-user-db prints an error if less than three params are passed" {
+@test "create-user-db prints an error if --password is missing" {
     user='foo'
     db='bar'
-    shellmock_expect psql --type regex --match ".*" --output "called psql"
-    run $CREATE_USER $user $db
-    echo "${lines[@]}" # prints the lines if test fails
-
-    [ "${lines[0]}" == "Passed 2 parameters. Expected 3." ]
+    run "$create_user" --user $user --db
+    echo "$output" # prints the lines if test fails
+    [ $status -eq 1 ]
+    [ "${lines[0]}" == "The --password parameter is required." ]
 }

@@ -2,6 +2,7 @@
 
 setup() {
   user='foo'
+  limited_privilege_user='not_the_owner'
   db='foodb'
   password='foopass'
   fixture="${BATS_TEST_DIRNAME}/create-user-db-test.mk"
@@ -9,6 +10,7 @@ setup() {
 
 teardown() {
   make --no-print-directory -f "${fixture}" drop-user-db USER="$user" DB="$db"
+  make --no-print-directory -f "${fixture}" drop-user-db USER="$limited_privilege_user" DB="$db"
 }
 
 @test "create-user-db exits with code 0" {
@@ -36,4 +38,14 @@ teardown() {
   run make --no-print-directory -f "${fixture}" test-user-password USER="$user" DB="$db" PASS="wrongpassword"
   echo "${lines[@]}" # prints the lines if test fails
   [ "${lines[0]}" == "psql: FATAL:  password authentication failed for user \"$user\"" ]
+}
+
+
+@test "create-user-db creates a user that only has specific privileges in the specified schemas" {
+  make --no-print-directory -f "${fixture}" create-user-db USER="$user" DB="$db" PASS="$password"
+  make --no-print-directory -f "${fixture}" create-user-db-privileges USER="$limited_privilege_user" DB="$db" PASS="qwerty"
+  run make --no-print-directory -f "${fixture}" get-user-tables-privileges USER="$limited_privilege_user" DB="$db" SCHEMA="schema_foo"
+  echo "$output" # prints the lines if test fails
+  [[ "${lines[-2]}" =~ "INSERT" ]]
+  [[ "${lines[-1]}" =~ "SELECT" ]]
 }
