@@ -70,6 +70,7 @@ install: whoami
 	$(call oc_create_secrets)
 	$(call oc_promote,$(PROJECT_PREFIX)postgres)
 	$(call oc_deploy)
+	$(call oc_wait_for_deploy_ready,$(PROJECT_PREFIX)ciip-postgres-master)
 	$(call oc_wait_for_deploy_ready,$(PROJECT_PREFIX)postgres-master)
 	@@echo "TODO: wait for statefulset to be ready"
 	@@echo "waiting for all $(PROJECT_PREFIX)postgres-workers to be connected to $(PROJECT_PREFIX)postgres-master..."; \
