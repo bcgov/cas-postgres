@@ -23,7 +23,7 @@ teardown() {
   make --no-print-directory -f "${fixture}" create-user-db USER="$user" DB="$db" PASS="$password"
   run make --no-print-directory -f "${fixture}" test-user-password USER="$user" DB="$db" PASS="$password"
   echo "${lines[@]}" # prints the lines if test fails
-  [ "$(echo -e "${lines[0]}" | tr -d '[:space:]')" == "ok" ]
+  [[ "${lines[0]}" =~ "ok" ]]
 }
 
 @test "create-user-db is idempotent" {
@@ -31,6 +31,14 @@ teardown() {
   run make --no-print-directory -f "${fixture}" create-user-db USER="$user" DB="$db" PASS="$password"
   echo "${lines[@]}" # prints the lines if test fails
   [ "${status}" -eq 0 ]
+}
+
+@test "create-user-db updates the password" {
+  make --no-print-directory -f "${fixture}" create-user-db USER="$user" DB="$db" PASS="oldPassword"
+  make --no-print-directory -f "${fixture}" create-user-db USER="$user" DB="$db" PASS="$password"
+  run make --no-print-directory -f "${fixture}" test-user-password USER="$user" DB="$db" PASS="$password"
+  echo "${lines[@]}" # prints the lines if test fails
+  [[ "${lines[0]}" =~ "ok" ]]
 }
 
 @test "create-user-db creates a user that fails to log in with the wrong password" {
