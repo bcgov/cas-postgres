@@ -68,6 +68,11 @@ objects:
                     secretKeyRef:
                       key: postgresqlAdminPassword
                       name: ${PREFIX}ciip-postgres-master
+                - name: GOOGLE_APPLICATION_CREDENTIALS
+                  valueFrom:
+                    secretKeyRef:
+                      key: credentials.json
+                      name: gcp-wksv3k-dev-cas-airflow-service-account-key
                 - name: POSTGRESQL_MAX_CONNECTIONS
                   value: "1000"
                 - name: POSTGRESQL_MAX_PREPARED_TRANSACTIONS
@@ -85,7 +90,7 @@ objects:
                 - name: POSTGRESQL_ARCHIVE_TIMEOUT
                   value: "60"
                 - name: POSTGRESQL_ARCHIVE_COMMAND
-                  value: "sh archive.sh %p"
+                  value: "wal-g wal-push %p"
               image: ${OC_REGISTRY}/${OC_PROJECT}/${PREFIX}postgres:${GIT_SHA1}
               imagePullPolicy: IfNotPresent
               lifecycle:
