@@ -60,6 +60,18 @@ RUN INSTALL_PKGS="nss_wrapper make gcc vim-common kernel-headers zlib-devel libc
     rpm -V $INSTALL_PKGS && \
     dnf clean all -y
 
+RUN mkdir -p walg && \
+    pushd walg && \
+    wget https://github.com/wal-g/wal-g/releases/download/v0.2.15/wal-g.linux-amd64.tar.gz && \
+    tar -zxvf wal-g.linux-amd64.tar.gz && \
+    ./wal-g --help && \
+    popd && \
+    chmod g=u /etc/passwd && \
+    /usr/libexec/fix-permissions /walg
+
+COPY walg/ .
+COPY archive.sh .
+
 RUN curl https://ftp.postgresql.org/pub/source/v11.4/postgresql-11.4.tar.gz | tar xz && \
     pushd postgresql-11.4 && \
     ./configure --without-readline --with-libxml && \

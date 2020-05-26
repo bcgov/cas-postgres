@@ -78,6 +78,14 @@ objects:
                   value: 8GB
                 - name: PGDATA
                   value: /var/lib/pgsql/data/userdata
+                - name: POSTGRESQL_WAL_LEVEL
+                  value: "replica"
+                - name: POSTGRESQL_ARCHIVE_MODE
+                  value: "on"
+                - name: POSTGRESQL_ARCHIVE_TIMEOUT
+                  value: "60"
+                - name: POSTGRESQL_ARCHIVE_COMMAND
+                  value: "sh archive.sh %p"
               image: ${OC_REGISTRY}/${OC_PROJECT}/${PREFIX}postgres:${GIT_SHA1}
               imagePullPolicy: IfNotPresent
               lifecycle:
