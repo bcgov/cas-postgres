@@ -3,3 +3,4 @@ deploy:
     - git submodule --quiet init
     - git submodule --quiet update --remote
     - make install
+    - make make_full_backup
