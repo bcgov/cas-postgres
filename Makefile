@@ -153,7 +153,7 @@ endif
 test_e2e_setup: $(call make_help,test_e2e_setup,Set up the local cluster for e2e tests. Run prior to make install)
 test_e2e_setup: OC_PROJECT=$(OC_DEV_PROJECT)
 test_e2e_setup:
-	$(eval OC_TEMPLATE_VARS += TFC_TOKEN="$(shell echo -n "$(TFC_TOKEN)" | base64)" TFC_WORKSPACE_ID="$(shell echo -n "$(TFC_WORKSPACE_ID)" | base64)")
+	$(eval OC_TEMPLATE_VARS += TFC_TOKEN="$(shell echo -n "$(TFC_TOKEN)" | base64 -w 0)" TFC_WORKSPACE_ID="$(shell echo -n "$(TFC_WORKSPACE_ID)" | base64 -w 0)")
 	@@oc process --ignore-unknown-parameters -f test/e2e/terraform-cloud-workspace-secret.yml $(OC_TEMPLATE_VARS) |\
 		oc -n "$(OC_PROJECT)" create --validate -f- ;
 
