@@ -67,7 +67,7 @@ install: WORKER_CPU_REQUEST != if [ "$(OC_PROJECT)" == "$(OC_PROD_PROJECT)" ]; t
 install: POSTGRESQL_ADMIN_PASSWORD=$(shell openssl rand -base64 32 | tr -d /=+ | cut -c -16 | base64)
 install: OC_TEMPLATE_VARS += POSTGRESQL_ADMIN_PASSWORD="$(POSTGRESQL_ADMIN_PASSWORD)"
 install: whoami
-	$(call oc_run_job,cas-shelf-tfe-add-app)
+	$(call oc_run_job,${PROJECT_PREFIX}ciip-postgres-shelf-tfe-add-app)
 	$(call oc_create_secrets)
 	$(call oc_promote,$(PROJECT_PREFIX)postgres)
 	$(call oc_deploy)
