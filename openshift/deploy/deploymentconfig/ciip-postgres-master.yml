@@ -92,7 +92,7 @@ objects:
                 - name: POSTGRESQL_ARCHIVE_COMMAND
                   value: "wal-g wal-push %p"
                 - name: WALG_GS_PREFIX
-                  value: "gs://${OC_PROJECT}-${PREFIX}postgres-walg"
+                  value: "gs://${OC_PROJECT}-${PREFIX}ciip-postgres-walg"
               image: ${OC_REGISTRY}/${OC_PROJECT}/${PREFIX}postgres:${GIT_SHA1}
               imagePullPolicy: IfNotPresent
               lifecycle:
