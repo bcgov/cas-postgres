@@ -72,7 +72,7 @@ objects:
                   valueFrom:
                     secretKeyRef:
                       key: credentials.json
-                      name: gcp-wksv3k-dev-cas-airflow-service-account-key
+                      name: gcp-wksv3k-dev-ciip-postgres-walg-service-account-key
                 - name: POSTGRESQL_MAX_CONNECTIONS
                   value: "1000"
                 - name: POSTGRESQL_MAX_PREPARED_TRANSACTIONS
