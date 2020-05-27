@@ -49,6 +49,9 @@ jobs:
           command: make build
           name: Build image on the cluster
       - run:
+          command: make test_e2e_setup
+          name: Setup for e2e test
+      - run:
           command: >
             make install_dev
             MASTER_CPU_REQUEST="300m" MASTER_CPU_LIMIT="300m"

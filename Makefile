@@ -149,6 +149,14 @@ ifeq ($(MAKECMDGOALS),$(filter $(MAKECMDGOALS),test_e2e test_unit))
 include $(PROJECT_FOLDER)/.pipeline/test/bats.mk
 endif
 
+.PHONY: test_e2e_setup
+test_e2e_setup: $(call make_help,test_e2e_setup,Set up the local cluster for e2e tests. Run prior to make install)
+test_e2e_setup: OC_PROJECT=$(OC_DEV_PROJECT)
+test_e2e_setup:
+	$(eval OC_TEMPLATE_VARS += TFC_TOKEN="$(shell echo -n "$(TFC_TOKEN)" | base64)" TFC_WORKSPACE_ID="$(shell echo -n "$(TFC_WORKSPACE_ID)" | base64)")
+	@@oc process --ignore-unknown-parameters -f test/e2e/terraform-cloud-workspace-secret.yml $(OC_TEMPLATE_VARS) |\
+		oc -n "$(OC_PROJECT)" create --validate -f- ;
+
 
 .PHONY: test_e2e
 test_e2e: $(call make_help,test_e2e,Runs e2e tests with bats)
@@ -162,4 +170,3 @@ test_e2e:
 test_unit: $(call make_help,test_unit,Runs unit tests with bats)
 test_unit: # https://github.com/bats-core/bats-core
 	$(call bats_test,$(PROJECT_FOLDER)/test/unit)
-
