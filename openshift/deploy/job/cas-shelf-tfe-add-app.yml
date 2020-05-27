@@ -44,5 +44,5 @@ objects:
                     secretKeyRef:
                       key: workspace_id
                       name: terraform-cloud-workspace
-              command: ["bash",  "/script.sh", "${OC_PROJECT}", "${PREFIX}ciip-postgres-walg"]
+              command: ["bash",  "/script.sh", "${OC_PROJECT}", "ciip-pg-walg"]
           restartPolicy: Never

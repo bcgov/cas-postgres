@@ -72,7 +72,7 @@ objects:
                   valueFrom:
                     secretKeyRef:
                       key: credentials.json
-                      name: gcp-${OC_PROJECT}-${PREFIX}ciip-postgres-walg-service-account-key
+                      name: gcp-${OC_PROJECT}-ciip-pg-walg-service-account-key
                 - name: POSTGRESQL_MAX_CONNECTIONS
                   value: "1000"
                 - name: POSTGRESQL_MAX_PREPARED_TRANSACTIONS
@@ -92,7 +92,7 @@ objects:
                 - name: POSTGRESQL_ARCHIVE_COMMAND
                   value: "wal-g wal-push %p"
                 - name: WALG_GS_PREFIX
-                  value: "gs://${OC_PROJECT}-${PREFIX}ciip-postgres-walg"
+                  value: "gs://${OC_PROJECT}-ciip-pg-walg"
               image: ${OC_REGISTRY}/${OC_PROJECT}/${PREFIX}postgres:${GIT_SHA1}
               imagePullPolicy: IfNotPresent
               lifecycle:
