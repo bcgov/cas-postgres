@@ -156,6 +156,8 @@ test_e2e_setup:
 	$(eval OC_TEMPLATE_VARS += TFC_TOKEN="$(shell echo -n "$(TFC_TOKEN)" | base64 -w 0)" TFC_WORKSPACE_ID="$(shell echo -n "$(TFC_WORKSPACE_ID)" | base64 -w 0)")
 	@@oc process --ignore-unknown-parameters -f test/e2e/terraform-cloud-workspace-secret.yml $(OC_TEMPLATE_VARS) |\
 		oc -n "$(OC_PROJECT)" create --validate -f- ;
+	@@oc process --ignore-unknown-parameters -f test/e2e/gcp-sa-secret.yml |\
+		oc -n "$(OC_PROJECT)" create --validate -f- ;
 
 
 .PHONY: test_e2e
