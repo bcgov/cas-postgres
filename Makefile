@@ -67,6 +67,7 @@ install: WORKER_CPU_REQUEST != if [ "$(OC_PROJECT)" == "$(OC_PROD_PROJECT)" ]; t
 install: POSTGRESQL_ADMIN_PASSWORD=$(shell openssl rand -base64 32 | tr -d /=+ | cut -c -16 | base64)
 install: OC_TEMPLATE_VARS += POSTGRESQL_ADMIN_PASSWORD="$(POSTGRESQL_ADMIN_PASSWORD)"
 install: whoami
+	$(call oc_run_job,${PROJECT_PREFIX}ciip-postgres-shelf-tfe-add-app)
 	$(call oc_create_secrets)
 	$(call oc_promote,$(PROJECT_PREFIX)postgres)
 	$(call oc_deploy)
@@ -147,6 +148,16 @@ old_tags:
 ifeq ($(MAKECMDGOALS),$(filter $(MAKECMDGOALS),test_e2e test_unit))
 include $(PROJECT_FOLDER)/.pipeline/test/bats.mk
 endif
+
+.PHONY: test_e2e_setup
+test_e2e_setup: $(call make_help,test_e2e_setup,Set up the local cluster for e2e tests. Run prior to make install)
+test_e2e_setup: OC_PROJECT=$(OC_DEV_PROJECT)
+test_e2e_setup:
+	$(eval OC_TEMPLATE_VARS += TFC_TOKEN="$(shell echo -n "$(TFC_TOKEN)" | base64 -w 0)" TFC_WORKSPACE_ID="$(shell echo -n "$(TFC_WORKSPACE_ID)" | base64 -w 0)")
+	@@oc process --ignore-unknown-parameters -f test/e2e/terraform-cloud-workspace-secret.yml $(OC_TEMPLATE_VARS) |\
+		oc -n "$(OC_PROJECT)" create --validate -f- ;
+	@@oc process --ignore-unknown-parameters -f test/e2e/gcp-sa-secret.yml |\
+		oc -n "$(OC_PROJECT)" create --validate -f- ;
 
 
 .PHONY: test_e2e

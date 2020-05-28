@@ -68,6 +68,11 @@ objects:
                     secretKeyRef:
                       key: postgresqlAdminPassword
                       name: ${PREFIX}ciip-postgres-master
+                - name: GOOGLE_APPLICATION_CREDENTIALS
+                  valueFrom:
+                    secretKeyRef:
+                      key: credentials.json
+                      name: gcp-${OC_PROJECT}-ciip-pg-walg-service-account-key
                 - name: POSTGRESQL_MAX_CONNECTIONS
                   value: "1000"
                 - name: POSTGRESQL_MAX_PREPARED_TRANSACTIONS
@@ -78,6 +83,16 @@ objects:
                   value: 8GB
                 - name: PGDATA
                   value: /var/lib/pgsql/data/userdata
+                - name: POSTGRESQL_WAL_LEVEL
+                  value: "replica"
+                - name: POSTGRESQL_ARCHIVE_MODE
+                  value: "on"
+                - name: POSTGRESQL_ARCHIVE_TIMEOUT
+                  value: "60"
+                - name: POSTGRESQL_ARCHIVE_COMMAND
+                  value: "wal-g wal-push %p"
+                - name: WALG_GS_PREFIX
+                  value: "gs://${OC_PROJECT}-ciip-pg-walg"
               image: ${OC_REGISTRY}/${OC_PROJECT}/${PREFIX}postgres:${GIT_SHA1}
               imagePullPolicy: IfNotPresent
               lifecycle:

@@ -99,6 +99,9 @@ ENV CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/postgresql \
 COPY root /
 COPY ./s2i/bin/ $STI_SCRIPTS_PATH
 
+RUN curl -L -k https://github.com/wal-g/wal-g/releases/download/v0.2.15/wal-g.linux-amd64.tar.gz | tar zx && \
+    mv wal-g /usr/bin
+
 # Not using VOLUME statement since it's not working in OpenShift Online:
 # https://github.com/sclorg/httpd-container/issues/30
 # VOLUME ["/var/lib/pgsql/data"]
