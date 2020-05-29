@@ -14,7 +14,6 @@ process_extending_files \
         "${CONTAINER_SCRIPTS_PATH}/pre-start"
 
 check_env_vars
-generate_passwd_file
 generate_postgresql_config
 
 # Is this brand new data volume?
