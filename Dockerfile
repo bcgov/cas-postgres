@@ -60,6 +60,10 @@ RUN INSTALL_PKGS="nss_wrapper make gcc vim-common kernel-headers zlib-devel libc
     rpm -V $INSTALL_PKGS && \
     dnf clean all -y
 
+ENV POSTGRESQL_WAL_LEVEL=replica
+ENV POSTGRESQL_ARCHIVE_MODE=off
+ENV POSTGRESQL_ARCHIVE_TIMEOUT=0
+
 RUN curl https://ftp.postgresql.org/pub/source/v11.4/postgresql-11.4.tar.gz | tar xz && \
     pushd postgresql-11.4 && \
     ./configure --without-readline --with-libxml && \

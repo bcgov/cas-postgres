@@ -24,13 +24,13 @@ effective_cache_size = ${POSTGRESQL_EFFECTIVE_CACHE_SIZE}
 shared_preload_libraries = ${POSTGRESQL_SHARED_PRELOAD_LIBRARIES}
 
 # Escalates the wal_level setting to 'replica'. Default: minimal
-wal_level = ${POSTGRESQL_WAL_LEVEL:-replica}
+wal_level = ${POSTGRESQL_WAL_LEVEL}
 
 # Sets the archive mode to 'on'. Default: off
-archive_mode = ${POSTGRESQL_ARCHIVE_MODE:-on}
+archive_mode = ${POSTGRESQL_ARCHIVE_MODE}
 
 # Set the number of seconds for archive timeout. Default 0
-archive_timeout = ${POSTGRESQL_ARCHIVE_TIMEOUT:-0}
+archive_timeout = ${POSTGRESQL_ARCHIVE_TIMEOUT}
 
 # Set the archive command to push wal-files on backup. Default ''
-archive_command = ${POSTGRESQL_ARCHIVE_COMMAND:="''"}
+archive_command = '${POSTGRESQL_ARCHIVE_COMMAND}'
