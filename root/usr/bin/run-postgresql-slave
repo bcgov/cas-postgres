@@ -25,7 +25,6 @@ EOF
 }
 
 check_env_vars
-generate_passwd_file
 generate_postgresql_config
 
 wait_for_postgresql_master

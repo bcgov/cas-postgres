@@ -438,3 +438,10 @@ process_extending_files()
     done
   done <<<"$(get_matched_files '*.sh' "$@" | sort -u)"
 }
+
+create_gcp_credential_file()
+{
+  if [ -n "$GOOGLE_APPLICATION_CREDENTIALS_JSON" ] && [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+    echo "$GOOGLE_APPLICATION_CREDENTIALS_JSON" >> "$GOOGLE_APPLICATION_CREDENTIALS"
+  fi
+}

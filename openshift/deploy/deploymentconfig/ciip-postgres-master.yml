@@ -69,6 +69,8 @@ objects:
                       key: postgresqlAdminPassword
                       name: ${PREFIX}ciip-postgres-master
                 - name: GOOGLE_APPLICATION_CREDENTIALS
+                  value: "/opt/app-root/src/gcp-credentials.json"
+                - name: GOOGLE_APPLICATION_CREDENTIALS_JSON
                   valueFrom:
                     secretKeyRef:
                       key: credentials.json
