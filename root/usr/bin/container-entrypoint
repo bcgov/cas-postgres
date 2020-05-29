@@ -2,5 +2,6 @@
 
 source "${CONTAINER_SCRIPTS_PATH}/common.sh"
 generate_passwd_file
+create_gcp_credential_file
 
 exec "$@"
