@@ -92,7 +92,7 @@ objects:
                 - name: POSTGRESQL_ARCHIVE_TIMEOUT
                   value: "60"
                 - name: POSTGRESQL_ARCHIVE_COMMAND
-                  value: "wal-g wal-push %p"
+                  value: "'wal-g wal-push %p'"
                 - name: WALG_GS_PREFIX
                   value: "gs://${OC_PROJECT}-ciip-pg-walg"
               image: ${OC_REGISTRY}/${OC_PROJECT}/${PREFIX}postgres:${GIT_SHA1}
