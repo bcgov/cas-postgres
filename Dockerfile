@@ -124,6 +124,10 @@ RUN curl -L -k https://github.com/wal-g/wal-g/releases/download/v0.2.15/wal-g.li
 RUN usermod -a -G root postgres && \
     /usr/libexec/fix-permissions --read-only "$APP_DATA"
 
+# Allows the user to write in the src directory, as the entrypoint may need to
+# create a gcp credendials file
+RUN /usr/libexec/fix-permissions "$APP_DATA/src"
+
 USER 26
 
 ENTRYPOINT ["container-entrypoint"]
