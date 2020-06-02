@@ -90,7 +90,7 @@ jobs:
         type: string
       cache_version:
         type: integer
-        default: 1
+        default: 2
     steps:
       - checkout
       - run:
