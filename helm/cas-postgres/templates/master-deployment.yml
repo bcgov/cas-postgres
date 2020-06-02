@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "postgres.fullname" . }}-master
+  spec:
+    strategy:
+      type: Recreate
+    replicas: 1
+    selector:
+      name: {{ template "postgres.fullname" . }}-master
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          name: {{ template "postgres.fullname" . }}-master
+      spec:
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        terminationGracePeriodSeconds: 3600
+        containers:
+          - env:
+              - name: POSTGRESQL_ADMIN_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    key: postgresqlAdminPassword
+                    name: {{ template "postgres.fullname" . }}-master
+              - name: PGPASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    key: postgresqlAdminPassword
+                    name: {{ template "postgres.fullname" . }}-master
+              - name: POSTGRESQL_MAX_CONNECTIONS
+                value: "1000"
+              - name: POSTGRESQL_MAX_PREPARED_TRANSACTIONS
+                value: "1000"
+              - name: POSTGRESQL_SHARED_BUFFERS
+                value: 2GB
+              - name: POSTGRESQL_EFFECTIVE_CACHE_SIZE
+                value: 8GB
+              - name: PGDATA
+                value: /var/lib/pgsql/data/userdata
+              {{- if .Values.walgArchive.enabled }}
+              - name: POSTGRESQL_WAL_LEVEL
+                value: "replica"
+              - name: POSTGRESQL_ARCHIVE_MODE
+                value: "on"
+              - name: POSTGRESQL_ARCHIVE_TIMEOUT
+                value: "60"
+              - name: POSTGRESQL_ARCHIVE_COMMAND
+                value: "wal-g wal-push %p"
+              - name: WALG_GS_PREFIX
+                value: "gs://${OC_PROJECT}-ciip-pg-walg"
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: "/opt/app-root/src/gcp-credentials.json"
+              - name: GOOGLE_APPLICATION_CREDENTIALS_JSON
+                valueFrom:
+                  secretKeyRef:
+                    key: credentials.json
+                    name: gcp-${OC_PROJECT}-ciip-pg-walg-service-account-key
+              {{ - end }}
+            image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            lifecycle:
+              preStop:
+                exec:
+                  command:
+                    - /usr/bin/env
+                    - bash
+                    - -c
+                    - |
+                      pg_ctl stop;
+            livenessProbe:
+              exec:
+                command:
+                  - /usr/libexec/check-container
+                  - --live
+              initialDelaySeconds: 120
+              timeoutSeconds: 30
+            name: {{ template "postgres.fullname" . }}-master
+            ports:
+              - containerPort: 5432
+                protocol: TCP
+            readinessProbe:
+              exec:
+                command:
+                  - /usr/libexec/check-container
+              initialDelaySeconds: 5
+              timeoutSeconds: 1
+            securityContext:
+              capabilities: {}
+              privileged: false
+            terminationMessagePath: /dev/termination-log
+            volumeMounts:
+              - mountPath: /var/lib/pgsql/data
+                name: {{ template "postgres.fullname" . }}-master
+            resources:
+{{ toYaml .Values.master.resources | indent 12 }}
+        volumes:
+          - name: {{ template "postgres.fullname" . }}-master
+            persistentVolumeClaim:
+              claimName: {{ template "postgres.fullname" . }}-master
