@@ -115,7 +115,7 @@ jobs:
           command: |
             docker save -o /tmp/cas-postgres.tar gcr.io/${GOOGLE_PROJECT_ID}/cas-postgres
       - save_cache:
-          key: v<< parameters.cache_version>>-cas-postgres-{{ .Branch }}
+          key: v<< parameters.cache_version>>-cas-postgres-{{ .Branch }}-{{ epoch }}
           paths:
             - /tmp/cas-postgres.tar
       - gcp-gcr/push-image:
