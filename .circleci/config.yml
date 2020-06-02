@@ -113,7 +113,7 @@ jobs:
       - run:
           name: Save Docker image layer cache
           command: |
-            docker save -o /tmp/cas-postgres.tar cas-postgres
+            docker save -o /tmp/cas-postgres.tar gcr.io/${GOOGLE_PROJECT_ID}/cas-postgres
       - save_cache:
           key: v<< parameters.cache_version>>-cas-postgres-{{ .Branch }}
           paths:
