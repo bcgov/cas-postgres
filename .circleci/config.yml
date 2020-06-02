@@ -83,25 +83,45 @@ jobs:
           name: Lint the openshift yaml
 
   build:
-    executor: redhat-openshift/default
+    docker:
+      - image: docker:17.05.0-ce-git
+    parameters:
+      cache_version:
+        type: integer
+        default: 1
     steps:
       - checkout
-      - run:
-          name: "Pull Submodules"
+      - setup_remote_docker
+      - restore_cache:
+          keys:
+            - v<< parameters.cache_version>>-cas-postgres-{{ .Branch }}
+          paths:
+            - /caches/cas-postgres.tar
+            - run:
+          name: Load cache
           command: |
-            git submodule init
-            git submodule update --remote
-      - redhat-openshift/login-and-update-kubeconfig:
-          insecure-skip-tls-verify: true
-          openshift-platform-version: 3.x
-          server-address: $OC_SERVER_ADDRESS
-          token: $OC_TOKEN
+            set +o pipefail
+            docker load -i /caches/cas-postgres.tar | true
       - run:
-          command: make configure
-          name: Configure imagestream to point at the current SHA1
+          command: docker login -u "$RED_HAT_DOCKER_USERNAME" -p "$RED_HAT_DOCKER_PASSWORD" "$RED_HAT_DOCKER_SERVER"
+          name: Log in to Red Hat docker registry
       - run:
-          command: make build
-          name: Build image on the remote cluster
+          name: Build image
+          command: |
+            docker build --cache-from=cas-postgres -t cas-postgres .
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            mkdir -p /caches
+            docker save -o /caches/cas-postgres.tar cas-postgres
+      - save_cache:
+          key: v<< parameters.cache_version>>-cas-postgres-{{ .Branch }}
+          paths:
+            - /caches/cas-postgres.tar
+      - persist_to_workspace:
+          root: /caches
+          paths:
+            - ./cas-postgres.tar
 
   test-unit:
     executor: ruby
@@ -116,6 +136,28 @@ jobs:
       - run:
           command: make test_unit
           name: Run unit tests via make
+
+  deploy_docker_image:
+    parameters:
+      image_tag:
+        type: string
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker
+      - run:
+          name: Load archived Docker image
+          command: docker load -i /tmp/workspace/cas-postgres.tar
+      - deploy:
+          name: Push application Docker image
+          command: |
+            docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
+            IMAGE_TAG=${CIRCLE_TAG/v/''}
+            TARGET="docker.pkg.github.com/bcgov/cas-postgres/cas-postgres:<< parameters.image_tag >>"
+            docker tag cas-postgres "$TARGET"
+            docker push "$TARGET"
 
 workflows:
   test:
