@@ -109,6 +109,7 @@ jobs:
             docker load -i /tmp/cas-postgres.tar | true
       - gcp-gcr/build-image:
           image: cas-postgres
+          extra_build_args: --cache-from=gcr.io/${GOOGLE_PROJECT_ID}/cas-postgres
           tag: << parameters.image_tag >>
       - run:
           name: Save Docker image layer cache
@@ -119,9 +120,9 @@ jobs:
           paths:
             - /tmp/cas-postgres.tar
       - gcp-gcr/push-image:
-          digest-path: /tmp/digest.txt
           image: cas-postgres
           tag: << parameters.image_tag >>
+          digest-path: /tmp/digest.txt
       - run:
           command: |
             echo "Digest is: $(</tmp/digest.txt)"
