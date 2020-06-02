@@ -88,15 +88,36 @@ jobs:
     parameters:
       image_tag:
         type: string
+      cache_version:
+        type: integer
+        default: 1
     steps:
       - checkout
       - run:
           command: docker login -u "$RED_HAT_DOCKER_USERNAME" -p "$RED_HAT_DOCKER_PASSWORD" "$RED_HAT_DOCKER_SERVER"
           name: Log in to Red Hat docker registry
       - gcp-gcr/gcr-auth
+      - restore_cache:
+          keys:
+            - v<< parameters.cache_version>>-cas-postgres-{{ .Branch }}
+          paths:
+            - /tmp/cas-postgres.tar
+      - run:
+          name: Load cache
+          command: |
+            set +o pipefail
+            docker load -i /tmp/cas-postgres.tar | true
       - gcp-gcr/build-image:
           image: cas-postgres
           tag: << parameters.image_tag >>
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            docker save -o /tmp/cas-postgres.tar cas-postgres
+      - save_cache:
+          key: v<< parameters.cache_version>>-cas-postgres-{{ .Branch }}
+          paths:
+            - /tmp/cas-postgres.tar
       - gcp-gcr/push-image:
           digest-path: /tmp/digest.txt
           image: cas-postgres
