@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   redhat-openshift: circleci/redhat-openshift@0.2.0
   orb-tools: circleci/orb-tools@8.27.4
+  gcp-gcr: circleci/gcp-gcr@0.7.1
 
 executors:
   ruby:
@@ -82,46 +83,27 @@ jobs:
           command: make lint
           name: Lint the openshift yaml
 
-  build:
-    docker:
-      - image: docker:17.05.0-ce-git
+  build_and_push:
+    executor: gcp-gcr/default
     parameters:
-      cache_version:
-        type: integer
-        default: 1
+      image_tag:
+        type: string
     steps:
       - checkout
-      - setup_remote_docker
-      - restore_cache:
-          keys:
-            - v<< parameters.cache_version>>-cas-postgres-{{ .Branch }}
-          paths:
-            - /caches/cas-postgres.tar
-            - run:
-          name: Load cache
-          command: |
-            set +o pipefail
-            docker load -i /caches/cas-postgres.tar | true
       - run:
           command: docker login -u "$RED_HAT_DOCKER_USERNAME" -p "$RED_HAT_DOCKER_PASSWORD" "$RED_HAT_DOCKER_SERVER"
           name: Log in to Red Hat docker registry
+      - gcp-gcr/gcr-auth
+      - gcp-gcr/build-image:
+          image: cas-postgres
+          tag: << parameters.image_tag >>
+      - gcp-gcr/push-image:
+          digest-path: /tmp/digest.txt
+          image: cas-postgres
+          tag: << parameters.image_tag >>
       - run:
-          name: Build image
           command: |
-            docker build --cache-from=cas-postgres -t cas-postgres .
-      - run:
-          name: Save Docker image layer cache
-          command: |
-            mkdir -p /caches
-            docker save -o /caches/cas-postgres.tar cas-postgres
-      - save_cache:
-          key: v<< parameters.cache_version>>-cas-postgres-{{ .Branch }}
-          paths:
-            - /caches/cas-postgres.tar
-      - persist_to_workspace:
-          root: /caches
-          paths:
-            - ./cas-postgres.tar
+            echo "Digest is: $(</tmp/digest.txt)"
 
   test-unit:
     executor: ruby
@@ -137,41 +119,19 @@ jobs:
           command: make test_unit
           name: Run unit tests via make
 
-  deploy_docker_image:
-    parameters:
-      image_tag:
-        type: string
-    docker:
-      - image: docker:17.05.0-ce-git
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - setup_remote_docker
-      - run:
-          name: Load archived Docker image
-          command: docker load -i /tmp/workspace/cas-postgres.tar
-      - deploy:
-          name: Push application Docker image
-          command: |
-            docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
-            IMAGE_TAG=${CIRCLE_TAG/v/''}
-            TARGET="docker.pkg.github.com/bcgov/cas-postgres/cas-postgres:<< parameters.image_tag >>"
-            docker tag cas-postgres "$TARGET"
-            docker push "$TARGET"
-
 workflows:
   test:
     jobs:
-      - lint:
-          context: cas-pipeline
+      # - lint:
+      #     context: cas-pipeline
       - test-unit
-      - build:
+      - build_and_push:
+          image_tag: ${CIRCLE_SHA1}
           context: cas-pipeline
           requires:
-            - lint
             - test-unit
-      - test-local-cluster:
-          context: cas-pipeline
-          requires:
-            - lint
-            - test-unit
+      # - test-local-cluster:
+      #     context: cas-pipeline
+      #     requires:
+      #       - lint
+      #       - test-unit
