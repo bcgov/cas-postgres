@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "postgres.fullname" . }}-master
+  name: {{ template "postgres.fullname" . }}
   spec:
     strategy:
       type: Recreate
     replicas: 1
     selector:
-      name: {{ template "postgres.fullname" . }}-master
+      name: {{ template "postgres.fullname" . }}
     strategy:
       type: Recreate
     template:
       metadata:
         labels:
-          name: {{ template "postgres.fullname" . }}-master
+          name: {{ template "postgres.fullname" . }}
       spec:
         dnsPolicy: ClusterFirst
         restartPolicy: Always
@@ -24,12 +24,12 @@ metadata:
                 valueFrom:
                   secretKeyRef:
                     key: postgresqlAdminPassword
-                    name: {{ template "postgres.fullname" . }}-master
+                    name: {{ template "postgres.fullname" . }}
               - name: PGPASSWORD
                 valueFrom:
                   secretKeyRef:
                     key: postgresqlAdminPassword
-                    name: {{ template "postgres.fullname" . }}-master
+                    name: {{ template "postgres.fullname" . }}
               - name: POSTGRESQL_MAX_CONNECTIONS
                 value: "1000"
               - name: POSTGRESQL_MAX_PREPARED_TRANSACTIONS
@@ -77,7 +77,7 @@ metadata:
                   - --live
               initialDelaySeconds: 120
               timeoutSeconds: 30
-            name: {{ template "postgres.fullname" . }}-master
+            name: {{ template "postgres.fullname" . }}
             ports:
               - containerPort: 5432
                 protocol: TCP
@@ -93,10 +93,10 @@ metadata:
             terminationMessagePath: /dev/termination-log
             volumeMounts:
               - mountPath: /var/lib/pgsql/data
-                name: {{ template "postgres.fullname" . }}-master
+                name: {{ template "postgres.fullname" . }}
             resources:
 {{ toYaml .Values.master.resources | indent 12 }}
         volumes:
-          - name: {{ template "postgres.fullname" . }}-master
+          - name: {{ template "postgres.fullname" . }}
             persistentVolumeClaim:
-              claimName: {{ template "postgres.fullname" . }}-master
+              claimName: {{ template "postgres.fullname" . }}

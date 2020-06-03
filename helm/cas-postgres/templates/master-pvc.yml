@@ -1,7 +1,7 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{ template "cas-postgres.fullname" . }}-master
+  name: {{ template "cas-postgres.fullname" . }}
   labels:
     app: {{ template "cas-postgres.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
