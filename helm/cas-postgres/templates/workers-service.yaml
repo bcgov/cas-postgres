@@ -4,7 +4,8 @@ kind: Service
 metadata:
   name: {{ template "cas-postgres.fullname" . }}-workers
   labels:
-    app: {{ template "cas-postgres.name" . }}-workers
+    app: {{ template "cas-postgres.name" . }}
+    component: worker
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -22,6 +23,7 @@ spec:
 {{ toYaml .Values.service.externalIPs | indent 4 }}
 {{- end }}
   selector:
-    app: {{ template "cas-postgres.fullname" . }}-workers
+    app: {{ template "cas-postgres.name" . }}
+    component: worker
     release: {{ .Release.Name }}
 {{- end }}

@@ -1,7 +1,7 @@
 image:
   repository:  gcr.io/ggl-cas-storage/cas-postgres
   pullPolicy: Always
-  tag: latest
+  tag: 4392eebef40e95b3faa5b3d35483b59b1719fc2a
 
 imagePullSecrets: []
 nameOverride: ""
@@ -16,8 +16,8 @@ resources:
     memory: 512Mi
 
 persistence:
-  storageClass: netapp-block-standard
-  size: 20Gi
+  storageClass: gluster-block
+  size: 1Gi
 
 namespace: wksv3k-dev
 walgArchive:

@@ -3,7 +3,8 @@ kind: Deployment
 metadata:
   name: {{ template "cas-postgres.fullname" . }}
   labels:
-    app: {{ template "cas-postgres.fullname" . }}
+    app: {{ template "cas-postgres.name" . }}
+    component: master
     chart: {{ template "cas-postgres.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -13,12 +14,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ template "cas-postgres.fullname" . }}
+      app: {{ template "cas-postgres.name" . }}
+      component: master
       release: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ template "cas-postgres.fullname" . }}
+        app: {{ template "cas-postgres.name" . }}
+        component: master
         release: {{ .Release.Name }}
     spec:
       dnsPolicy: ClusterFirst
@@ -85,7 +88,8 @@ spec:
             initialDelaySeconds: 120
             timeoutSeconds: 30
           ports:
-            - containerPort: {{ .Values.service.port }}
+            - name: postgresql
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
           readinessProbe:
             exec:

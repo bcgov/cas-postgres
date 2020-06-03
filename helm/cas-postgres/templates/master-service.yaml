@@ -4,6 +4,7 @@ metadata:
   name: {{ template "cas-postgres.fullname" . }}
   labels:
     app: {{ template "cas-postgres.name" . }}
+    component: master
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -21,5 +22,6 @@ spec:
 {{ toYaml .Values.service.externalIPs | indent 4 }}
 {{- end }}
   selector:
-    app: {{ template "cas-postgres.fullname" . }}
+    app: {{ template "cas-postgres.name" . }}
     release: {{ .Release.Name }}
+    component: master

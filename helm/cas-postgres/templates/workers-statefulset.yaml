@@ -3,16 +3,26 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "cas-postgres.fullname" . }}-worker
+  labels:
+    app: {{ template "cas-postgres.name" . }}
+    component: worker
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   selector:
     matchLabels:
-      app: {{ template "cas-postgres.fullname" . }}-workers
+      app: {{ template "cas-postgres.name" . }}
+      component: worker
+      release: {{ .Release.Name }}
   serviceName: {{ template "cas-postgres.fullname" . }}-workers
   replicas: {{ .Values.citus.replicas }}
   template:
     metadata:
       labels:
-        app: {{ template "cas-postgres.fullname" . }}-workers
+        app: {{ template "cas-postgres.name" . }}
+        component: worker
+        release: {{ .Release.Name }}
     spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
@@ -30,18 +40,34 @@ spec:
                   - -c
                   - |
                     if [ "${POD_IP}" ]; then
+                      i=1;
+                      tries=10;
                       # wait for the worker node to be healthy before registering it with the citus master
                       until /usr/libexec/check-container; do
                         sleep 1;
+                        if [ $i -gt $tries ]; then
+                          exit 1;
+                        fi;
+                        i=$((i+1));
                       done;
+                      i=1;
                       # idempotently register the worker node with the citus master
                       until psql -qtA -v "ON_ERROR_STOP=1" --host={{ template "cas-postgres.fullname" . }} --username=postgres --command="SELECT * FROM master_add_node('${HOSTNAME}.{{ template "cas-postgres.fullname" . }}-workers', {{ .Values.service.port }})"; do
                         sleep 1;
+                        if [ $i -gt $tries ]; then
+                          exit 2;
+                        fi;
+                        i=$((i+1));
                       done;
+                      i=1;
                       # enable queries to be routed to the worker node from the citus master
                       # this is necessary if master_disable_node() was previously called for this worker
                       until psql -qtA -v "ON_ERROR_STOP=1" --host={{ template "cas-postgres.fullname" . }} --username=postgres --command="SELECT * FROM master_activate_node('${HOSTNAME}.{{ template "cas-postgres.fullname" . }}-workers', {{ .Values.service.port }})"; do
                         sleep 1;
+                        if [ $i -gt $tries ]; then
+                          exit 3;
+                        fi;
+                        i=$((i+1));
                       done;
                     fi;
             preStop:
@@ -52,13 +78,20 @@ spec:
                   - -c
                   - |
                     # disable queries from the citus master to be routed to the worker node
-                    until psql -qtA -v "ON_ERROR_STOP=1" --host=${PREFIX}postgres-master --username=postgres --command="SELECT * FROM master_disable_node('${HOSTNAME}.${PREFIX}postgres-workers', 5432)"; do
+                    i=1;
+                    tries=10;
+                    until psql -qtA -v "ON_ERROR_STOP=1" --host={{ template "cas-postgres.fullname" . }} --username=postgres --command="SELECT * FROM master_disable_node('${HOSTNAME}.${PREFIX}postgres-workers', 5432)"; do
+                      if [ $i -gt $tries ]; then
+                          break;
+                      fi;
+                      i=$((i+1));
                       sleep 1;
                     done;
                     # gracefully shut down the worker node once it has been disabled
                     pg_ctl stop;
           ports:
-            - containerPort: {{ .Values.service.port }}
+            - name: postgresql
+              containerPort: {{ .Values.service.port }}
           env:
             - name: POD_IP
               valueFrom:
