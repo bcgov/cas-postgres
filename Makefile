@@ -106,6 +106,7 @@ install_prod: install
 .PHONY: mock_storageclass
 mock_storageclass:
 	$(call oc_mock_storageclass,netapp-block-standard)
+	$(call oc_mock_storageclass,gluster-block)
 
 .PHONY: provision
 provision:
