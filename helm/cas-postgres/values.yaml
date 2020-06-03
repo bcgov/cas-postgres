@@ -18,6 +18,8 @@ walgArchive:
   enabled: false
   # the GCS bucket name will be {{ namespace }}-{{ walgArchive.bucketSuffix }}
   bucketSuffix: "pg-walg"
+  env:
+
 
 
 ## Use Existing secret instead of creating one
@@ -25,7 +27,13 @@ walgArchive:
 # existingSecret: 'secret'
 
 service:
+  type: ClusterIP
   port: 5432
+  externalIPs: []
+  ## Manually set NodePort value
+  ## Requires service.type: NodePort
+  # nodePort:
+
 
 citus:
   enabled: false

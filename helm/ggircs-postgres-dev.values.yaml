@@ -1,8 +1,7 @@
 image:
   repository:  gcr.io/ggl-cas-storage/cas-postgres
   pullPolicy: Always
-  # Overrides the image tag whose default is the chart version.
-  tag: ""
+  tag: latest
 
 imagePullSecrets: []
 nameOverride: ""
@@ -15,6 +14,7 @@ resources:
   requests:
     cpu: 300m
     memory: 512Mi
+
 persistence:
   storageClass: netapp-block-standard
   size: 20Gi
@@ -28,7 +28,9 @@ walgArchive:
 # existingSecret: 'secret'
 
 service:
+  type: ClusterIP
   port: 5432
+  externalIPs: []
 
 citus:
   enabled: true
