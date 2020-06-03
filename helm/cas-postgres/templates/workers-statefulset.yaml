@@ -1,4 +1,4 @@
-{{ - if .Values.citus.enabled }}
+{{- if .Values.citus.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -113,4 +113,4 @@ spec:
           requests:
             storage: {{ .Values.persistence.size | quote }}
 
-{{ - end }}
+{{- end }}

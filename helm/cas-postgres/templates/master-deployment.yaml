@@ -58,7 +58,7 @@ metadata:
                   secretKeyRef:
                     key: credentials.json
                     name: gcp-${OC_PROJECT}-ciip-pg-walg-service-account-key
-              {{ - end }}
+              {{- end }}
             image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             lifecycle:

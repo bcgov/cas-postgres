@@ -1,4 +1,4 @@
-{{ - if .Values.citus.enabled }}
+{{- if .Values.citus.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -36,4 +36,4 @@ spec:
                   name: terraform-cloud-workspace
           command: ["bash",  "/script.sh", {{ .Values.namespace | quote }}, {{ .Values.walgArchive.bucketSuffix | quote }}]
       restartPolicy: Never
-{{ - end }}
+{{- end }}
