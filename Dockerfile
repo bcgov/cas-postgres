@@ -79,7 +79,7 @@ RUN curl https://ftp.postgresql.org/pub/source/v11.4/postgresql-11.4.tar.gz | ta
     mkdir -p /var/run/postgresql && \
     /usr/libexec/fix-permissions /var/lib/pgsql /var/run/postgresql
 
-RUN git clone -b 'v8.2.2' --single-branch  https://github.com/citusdata/citus.git && \
+RUN git clone -b 'v9.3.0' --single-branch  https://github.com/citusdata/citus.git && \
     pushd citus  && \
     ./configure && \
     make && \
