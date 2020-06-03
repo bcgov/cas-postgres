@@ -79,7 +79,7 @@ metadata:
               timeoutSeconds: 30
             name: {{ template "postgres.fullname" . }}
             ports:
-              - containerPort: 5432
+              - containerPort: {{ .Values.service.port }}
                 protocol: TCP
             readinessProbe:
               exec:
@@ -95,7 +95,7 @@ metadata:
               - mountPath: /var/lib/pgsql/data
                 name: {{ template "postgres.fullname" . }}
             resources:
-{{ toYaml .Values.master.resources | indent 12 }}
+{{ toYaml .Values.resources | indent 12 }}
         volumes:
           - name: {{ template "postgres.fullname" . }}
             persistentVolumeClaim:

@@ -21,3 +21,10 @@ walgArchive:
 ## Use Existing secret instead of creating one
 ## It must have a postgres-password key containing the desired password
 # existingSecret: 'secret'
+
+service:
+  port: 5432
+
+citus:
+  enabled: false
+  replicas: 4
