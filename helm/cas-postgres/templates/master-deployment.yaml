@@ -30,12 +30,12 @@ spec:
             - name: POSTGRESQL_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  key: postgresqlAdminPassword
+                  key: postgres-password
                   name: {{ template "cas-postgres.fullname" . }}
             - name: PGPASSWORD
               valueFrom:
                 secretKeyRef:
-                  key: postgresqlAdminPassword
+                  key: postgres-password
                   name: {{ template "cas-postgres.fullname" . }}
             - name: POSTGRESQL_MAX_CONNECTIONS
               value: "1000"

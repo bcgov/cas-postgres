@@ -67,12 +67,12 @@ spec:
             - name: POSTGRESQL_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  key: postgresqlAdminPassword
+                  key: postgres-password
                   name:  {{ template "cas-postgres.fullname" . }}
             - name: PGPASSWORD
               valueFrom:
                 secretKeyRef:
-                  key: postgresqlAdminPassword
+                  key: postgres-password
                   name:  {{ template "cas-postgres.fullname" . }}
             - name: PGDATA
               value: /var/lib/pgsql/data/userdata
