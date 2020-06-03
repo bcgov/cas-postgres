@@ -21,6 +21,12 @@ jobs:
             git submodule init
             git submodule update --remote
       - run:
+          name: install helm
+          command: |
+            curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+            chmod 700 get_helm.sh
+            ./get_helm.sh
+      - run:
           name: Add Docker registry to /etc/hosts
           command: echo "172.30.1.1 docker-registry.default.svc" | sudo tee -a /etc/hosts
       - redhat-openshift/create-local-cluster-with-oc:
@@ -47,19 +53,11 @@ jobs:
           command: make configure
           name: Configure the cluster
       - run:
-          command: make build
-          name: Build image on the cluster
-      - run:
           command: make test_e2e_setup
           name: Setup for e2e test
       - run:
-          command: >
-            make install_dev
-            MASTER_CPU_REQUEST="300m" MASTER_CPU_LIMIT="300m"
-            WORKER_CPU_REQUEST="300m" WORKER_CPU_LIMIT="300m"
-            MASTER_MEMORY_REQUEST="512Mi" MASTER_MEMORY_LIMIT="512Mi"
-            WORKER_MEMORY_REQUEST="512Mi" WORKER_MEMORY_LIMIT="512Mi"
-            POSTGRESQL_WORKERS=2
+          command: |
+            helm install cas-postgres helm/cas-postgres -f helm/ggircs-postgres-dev.values.yaml
           name: Deploy to dev
       - run:
           command: make test_e2e OC_PROJECT=wksv3k-dev
@@ -144,16 +142,13 @@ jobs:
 workflows:
   test:
     jobs:
-      # - lint:
-      #     context: cas-pipeline
       - test-unit
       - build_and_push:
           image_tag: ${CIRCLE_SHA1}
           context: cas-pipeline
           requires:
             - test-unit
-      # - test-local-cluster:
-      #     context: cas-pipeline
-      #     requires:
-      #       - lint
-      #       - test-unit
+      - test-local-cluster:
+          context: cas-pipeline
+          requires:
+            - build_and_push

@@ -1,0 +1,35 @@
+image:
+  repository:  gcr.io/ggl-cas-storage/cas-postgres
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart version.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 512Mi
+  requests:
+    cpu: 300m
+    memory: 512Mi
+persistence:
+  storageClass: netapp-block-standard
+  size: 20Gi
+
+namespace: wksv3k-dev
+walgArchive:
+  enabled: false
+
+## Use Existing secret instead of creating one
+## It must have a postgres-password key containing the desired password
+# existingSecret: 'secret'
+
+service:
+  port: 5432
+
+citus:
+  enabled: true
+  replicas: 2
