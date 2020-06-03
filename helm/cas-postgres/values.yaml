@@ -16,6 +16,8 @@ persistence:
 namespace: ""
 walgArchive:
   enabled: false
+  # the GCS bucket name will be {{ namespace }}-{{ walgArchive.bucketSuffix }}
+  bucketSuffix: "pg-walg"
 
 
 ## Use Existing secret instead of creating one
