@@ -57,7 +57,7 @@ jobs:
           name: Setup for e2e test
       - run:
           command: |
-            helm install cas-postgres helm/cas-postgres -f helm/ggircs-postgres-dev.values.yaml --set image.tag=${CIRCLE_SHA1} --atomic
+            helm install cas-postgres helm/cas-postgres -f helm/ggircs-postgres-dev.values.yaml --set image.tag=${CIRCLE_SHA1} --atomic --timeout 900s --namespace wksv3k-dev
           name: Deploy to dev
       - run:
           command: make test_e2e OC_PROJECT=wksv3k-dev
