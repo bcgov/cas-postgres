@@ -5,9 +5,7 @@ patroni:
     # Overrides the image tag whose default is the chart version.
     tag: "e2bedf45f0fdbdc793241e20f4ff0b50b0ef3e23"
 
-  imagePullSecrets: []
-  nameOverride: ""
-  fullnameOverride: ""
+  replicaCount: 2
 
   resources: {}
   persistentVolume:
@@ -20,10 +18,12 @@ patroni:
       enable: true
     configmaps:
       enable: true
+  walE:
+    enable: true
+    gcsBucket: wksv3k-dev-pg-helm-test
+    kubernetesSecret: gcp-wksv3k-dev-pg-helm-test-service-account-key
 
-namespace: ""
-walgArchive:
-  enabled: false
-  # the GCS bucket name will be {{ namespace }}-{{ walgArchive.bucketSuffix }}
-  bucketSuffix: "pg-walg"
-  env:
+namespace: "wksv3k-dev"
+gcs:
+  # the GCS bucket name will be {{ namespace }}-{{ gcs.bucketSuffix }}
+  bucketSuffix: "pg-helm-test"

@@ -1,4 +1,4 @@
-{{- if .Values.walgArchive.enabled }}
+{{- if .Values.patroni.walE.enable }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -34,6 +34,6 @@ spec:
                 secretKeyRef:
                   key: workspace_id
                   name: terraform-cloud-workspace
-          command: ["bash",  "/script.sh", {{ .Values.namespace | quote }}, {{ .Values.walgArchive.bucketSuffix | quote }}]
+          command: ["bash",  "/script.sh", {{ .Values.namespace | quote }}, {{ .Values.gcs.bucketSuffix | quote }}]
       restartPolicy: Never
 {{- end }}
