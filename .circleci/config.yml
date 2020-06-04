@@ -158,4 +158,4 @@ workflows:
       - test-local-cluster:
           context: cas-pipeline
           requires:
-            - build_and_push
+            - build_and_push_sha1
