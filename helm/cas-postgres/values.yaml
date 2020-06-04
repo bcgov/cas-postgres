@@ -7,6 +7,8 @@ patroni:
   replicaCount: 2
 
   resources: {}
+  credentials:
+    random: true
   persistentVolume:
     storageClass: gluster-block
     size: 1Gi

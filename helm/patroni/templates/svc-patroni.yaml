@@ -14,3 +14,7 @@ spec:
     port: 5432
     targetPort: postgresql
     protocol: TCP
+  selector:
+    app: {{ template "patroni.fullname" . }}
+    release: {{ .Release.Name }}
+    spilo-role: master
