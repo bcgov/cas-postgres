@@ -1,0 +1,6 @@
+dependencies:
+- name: patroni
+  repository: https://kubernetes-charts-incubator.storage.googleapis.com/
+  version: 0.16.0
+digest: sha256:a49687684c3c4d313fa262b6ba96034e117103a11398db364f4ccb1d813f5fac
+generated: "2020-06-03T15:29:25.293237717-07:00"

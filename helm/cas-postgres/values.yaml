@@ -1,17 +1,25 @@
-image:
-  repository:  gcr.io/ggl-cas-storage/cas-postgres
-  pullPolicy: Always
-  # Overrides the image tag whose default is the chart version.
-  tag: ""
+patroni:
+  image:
+    repository:  gcr.io/ggl-cas-storage/cas-postgres
+    pullPolicy: Always
+    # Overrides the image tag whose default is the chart version.
+    tag: "e2bedf45f0fdbdc793241e20f4ff0b50b0ef3e23"
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
 
-resources: {}
-persistence:
-  storageClass: netapp-block-standard
-  size: 20Gi
+  resources: {}
+  persistentVolume:
+    storageClass: gluster-block
+    size: 1Gi
+  # As per https://patroni.readthedocs.io/en/latest/kubernetes.html#use-configmaps
+  # Note that in some cases, for instance, when running on OpenShift, there is no alternative to using ConfigMaps.
+  kubernetes:
+    dcs:
+      enable: true
+    configmaps:
+      enable: true
 
 namespace: ""
 walgArchive:
@@ -19,22 +27,3 @@ walgArchive:
   # the GCS bucket name will be {{ namespace }}-{{ walgArchive.bucketSuffix }}
   bucketSuffix: "pg-walg"
   env:
-
-
-
-## Use Existing secret instead of creating one
-## It must have a postgres-password key containing the desired password
-# existingSecret: 'secret'
-
-service:
-  type: ClusterIP
-  port: 5432
-  externalIPs: []
-  ## Manually set NodePort value
-  ## Requires service.type: NodePort
-  # nodePort:
-
-
-citus:
-  enabled: false
-  replicas: 4

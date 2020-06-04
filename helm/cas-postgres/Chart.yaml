@@ -1,6 +1,10 @@
 apiVersion: v2
 name: cas-postgres
-description: A Helm chart for Kubernetes
+description: Postgres database for the CAS team
 type: application
 version: 0.1.0
 appVersion: 0.1.0
+dependencies:
+- name: patroni
+  version: "0.16.0"
+  repository: https://kubernetes-charts-incubator.storage.googleapis.com/
