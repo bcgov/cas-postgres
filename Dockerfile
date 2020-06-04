@@ -20,6 +20,9 @@ RUN apt-get update && \
 # libnss-wrapper is needed for openshift anyuid support
 RUN apt-get install libnss-wrapper && apt-get clean
 
+# Get prefix path to scripts rather than hard-code it
+ENV CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/postgresql
+
 ENTRYPOINT ["container-entrypoint"]
 
 CMD ["/bin/sh", "/launch.sh", "init"]
