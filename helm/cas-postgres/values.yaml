@@ -2,8 +2,7 @@ patroni:
   image:
     repository:  gcr.io/ggl-cas-storage/cas-postgres
     pullPolicy: Always
-    # Overrides the image tag whose default is the chart version.
-    tag: "e2bedf45f0fdbdc793241e20f4ff0b50b0ef3e23"
+    tag: "0.1.0"
 
   replicaCount: 2
 
@@ -12,18 +11,20 @@ patroni:
     storageClass: gluster-block
     size: 1Gi
   # As per https://patroni.readthedocs.io/en/latest/kubernetes.html#use-configmaps
-  # Note that in some cases, for instance, when running on OpenShift, there is no alternative to using ConfigMaps.
+  # "in some cases, for instance, when running on OpenShift, there is no alternative to using ConfigMaps."
   kubernetes:
     dcs:
       enable: true
     configmaps:
       enable: true
   walE:
-    enable: true
-    gcsBucket: wksv3k-dev-pg-helm-test
-    kubernetesSecret: gcp-wksv3k-dev-pg-helm-test-service-account-key
+    enable: false
+     # the GCS bucket name should be {{ namespace }}-{{ gcs.bucketSuffix }}
+    gcsBucket:
+    # kubernetesSecret should be gcp-{{ namespace }}-{{ gcs.bucketSuffix }}-service-account-key
+    kubernetesSecret:
 
-namespace: "wksv3k-dev"
+# options below are required if walE.enable is true
+namespace:
 gcs:
-  # the GCS bucket name will be {{ namespace }}-{{ gcs.bucketSuffix }}
-  bucketSuffix: "pg-helm-test"
+  bucketSuffix:

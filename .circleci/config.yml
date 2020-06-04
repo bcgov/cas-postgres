@@ -32,9 +32,6 @@ jobs:
       - redhat-openshift/create-local-cluster-with-oc:
           skip-registry-check: true
       - run:
-          command: docker login -u "$RED_HAT_DOCKER_USERNAME" -p "$RED_HAT_DOCKER_PASSWORD" "$RED_HAT_DOCKER_SERVER"
-          name: Log in to Red Hat docker registry
-      - run:
           name: Login as cluster admin
           command: oc login -u system:admin
       - run:
@@ -92,9 +89,6 @@ jobs:
         default: 2
     steps:
       - checkout
-      - run:
-          command: docker login -u "$RED_HAT_DOCKER_USERNAME" -p "$RED_HAT_DOCKER_PASSWORD" "$RED_HAT_DOCKER_SERVER"
-          name: Log in to Red Hat docker registry
       - gcp-gcr/gcr-auth
       - restore_cache:
           keys:
@@ -145,10 +139,22 @@ workflows:
     jobs:
       - test-unit
       - build_and_push:
+          name: build_and_push_sha1
           image_tag: ${CIRCLE_SHA1}
           context: cas-pipeline
           requires:
             - test-unit
+      - build_and_push:
+          name: build_and_push_tag
+          image_tag: ${CIRCLE_TAG/v/}
+          context: cas-pipeline
+          requires:
+            - test-unit
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
       - test-local-cluster:
           context: cas-pipeline
           requires:
