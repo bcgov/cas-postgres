@@ -4,7 +4,7 @@ remaining_tries=5
 until [ -n "$pod" ]; do
   pod=$($OC -n "$OC_PROJECT" get pods --selector app="${PROJECT_PREFIX}postgres-patroni",spilo-role=master --field-selector status.phase=Running -o name | cut -d '/' -f 2 );
   if [ -z "$pod" ] && [ $remaining_tries -gt 0 ]; then
-    sleep 1;
+    sleep 5;
     remaining_tries=$((remaining_tries-1))
   fi;
   if [ -z "$pod" ] && [ $remaining_tries -eq 0 ]; then
@@ -15,7 +15,7 @@ done
 
 
 function _exec() {
-  $OC -n "$OC_PROJECT" exec "$pod" -- /usr/bin/env bash -c "$@"
+  $OC -n "$OC_PROJECT" exec "$pod" -- "$@"
 }
 
 function _dropdb() {
@@ -55,9 +55,9 @@ teardown() {
 
 @test "create-user-db creates a user that can log in to the db" {
   _create_user_db -u "$user" -d "$db" -p "$password" --owner
-  run _exec PGPASSWORD="$password" psql -tq -U "$user" -d "$db" -c "select \'ok\';"
+  run _exec bash -c "PGPASSWORD=\"$password\" psql -tq -U \"$user\" -d \"$db\" -c \"select 'ok';\""
   echo "${lines[@]}" # prints the lines if test fails
-  [[ "${lines[0]}" =~ "ok" ]]
+  [ "$(echo -e "${lines[0]}" | tr -d '[:space:]')" == "ok" ]
 }
 
 @test "create-user-db is idempotent" {
@@ -70,14 +70,15 @@ teardown() {
 @test "create-user-db updates the password" {
   _create_user_db -u "$user" -d "$db" -p "oldPassword" --owner
   _create_user_db -u "$user" -d "$db" -p "$password" --owner
-  run _exec PGPASSWORD="$password" psql -tq -U "$user" -d "$db" -c "select \'ok\';"
+  run _exec bash -c "PGPASSWORD=\"$password\" psql -tq -U \"$user\" -d \"$db\" -c \"select 'ok';\""
   echo "${lines[@]}" # prints the lines if test fails
-  [[ "${lines[0]}" =~ "ok" ]]
+  [ "$(echo -e "${lines[0]}" | tr -d '[:space:]')" == "ok" ]
 }
 
 @test "create-user-db creates a user that fails to log in with the wrong password" {
+  skip "pg_hba needs to be configured to require password from localhost"
   _create_user_db -u "$user" -d "$db" -p "$password" --owner
-  run _exec PGPASSWORD="wrongpassword" psql -tq -U "$user" -d "$db" -c "select \'ok\';"
+  run _exec bash -c "PGPASSWORD=\"wrongpass\" psql -tq -U \"$user\" -d \"$db\" -c \"select 'ok';\""
   echo "${lines[@]}" # prints the lines if test fails
   [ "${lines[0]}" == "psql: FATAL:  password authentication failed for user \"$user\"" ]
 }
@@ -91,9 +92,8 @@ teardown() {
 	_exec psql -d $db -c "create table schema_bar.foo (blah int);"
 	_exec psql -d $db -c "create table schema_baz.foo (blah int);"
   _create_user_db -u "$limited_privilege_user" -d "$db" -p "$password" --schemas schema_foo,schema_bar --privileges select,insert
-  _exec psql -d $db -tq -c "select distinct privilege_type from information_schema.role_table_grants where table_schema=\'schema_foo\' and grantee=\'$limited_privilege_user\' order by privilege_type;"
-
+  run _exec psql -d $db -tq -c "select distinct privilege_type from information_schema.role_table_grants where table_schema='schema_foo' and grantee='$limited_privilege_user' order by privilege_type;"
   echo "$output" # prints the lines if test fails
-  [[ "${lines[-2]}" =~ "INSERT" ]]
-  [[ "${lines[-1]}" =~ "SELECT" ]]
+  [ "$(echo -e "${lines[0]}" | tr -d '[:space:]')" == "INSERT" ]
+  [ "$(echo -e "${lines[1]}" | tr -d '[:space:]')" == "SELECT" ]
 }

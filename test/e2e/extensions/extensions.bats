@@ -5,7 +5,7 @@ remaining_tries=5
 until [ -n "$pod" ]; do
   pod=$($OC -n "$OC_PROJECT" get pods --selector app="${PROJECT_PREFIX}postgres-patroni",spilo-role=master --field-selector status.phase=Running -o name | cut -d '/' -f 2 );
   if [ -z "$pod" ] && [ $remaining_tries -gt 0 ]; then
-    sleep 1;
+    sleep 5;
     remaining_tries=$((remaining_tries-1))
   fi;
   if [ -z "$pod" ] && [ $remaining_tries -eq 0 ]; then

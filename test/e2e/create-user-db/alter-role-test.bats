@@ -5,7 +5,7 @@ remaining_tries=5
 until [ -n "$pod" ]; do
   pod=$($OC -n "$OC_PROJECT" get pods --selector app="${PROJECT_PREFIX}postgres-patroni",spilo-role=master --field-selector status.phase=Running -o name | cut -d '/' -f 2 );
   if [ -z "$pod" ] && [ $remaining_tries -gt 0 ]; then
-    sleep 1;
+    sleep 5;
     remaining_tries=$((remaining_tries-1))
   fi;
   if [ -z "$pod" ] && [ $remaining_tries -eq 0 ]; then
@@ -15,7 +15,7 @@ until [ -n "$pod" ]; do
 done
 
 function _exec() {
-  $OC -n "$OC_PROJECT" exec "$pod" -- /usr/bin/env bash -c "$@"
+  $OC -n "$OC_PROJECT" exec "$pod" -- "$@"
 }
 
 function _dropdb() {
@@ -50,7 +50,7 @@ teardown() {
 
 @test "alter-role alters a user & adds createrole permission" {
   _alter_role $user $privilege
-  run _exec PGPASSWORD="$password" psql -tq -U "$user" -d "$db" -c "select rolcreaterole from pg_roles where rolname=\'$user\';"
+  run _exec psql -tq -d "$db" -c "select rolcreaterole from pg_roles where rolname=\'$user\';"
   echo "$output" # prints the lines if test fails
   [[ "${lines[0]}" =~ "t" ]]
 }
