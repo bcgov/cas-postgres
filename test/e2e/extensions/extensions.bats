@@ -1,9 +1,21 @@
 #!/usr/bin/env bats
 
-POD=$($OC -n $OC_PROJECT get pods --selector app="${PROJECT_PREFIX}postgres-patroni",spilo-role=master --field-selector status.phase=Running -o name | cut -d '/' -f 2 );
+pod=""
+remaining_tries=5
+until [ -n "$pod" ]; do
+  pod=$($OC -n "$OC_PROJECT" get pods --selector app="${PROJECT_PREFIX}postgres-patroni",spilo-role=master --field-selector status.phase=Running -o name | cut -d '/' -f 2 );
+  if [ -z "$pod" ] && [ $remaining_tries -gt 0 ]; then
+    sleep 1;
+    remaining_tries=$((remaining_tries-1))
+  fi;
+  if [ -z "$pod" ] && [ $remaining_tries -eq 0 ]; then
+    echo "couldn't get pod"
+    exit 1
+  fi
+done
 
 function _psql() {
-  $OC -n $OC_PROJECT exec $POD -- psql -qtA -v 'ON_ERROR_STOP=1' -c "$1"
+  $OC -n "$OC_PROJECT" exec "$pod" -- psql -qtA -v 'ON_ERROR_STOP=1' -c "$1"
 }
 
 function _pg_available_extension() {
