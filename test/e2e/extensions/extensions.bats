@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-POD=$($OC -n $OC_PROJECT get pods --selector deploymentconfig="${PROJECT_PREFIX}postgres-master" --field-selector status.phase=Running -o name | cut -d '/' -f 2 );
+POD=$($OC -n $OC_PROJECT get pods --selector app="${PROJECT_PREFIX}postgres-patroni",spilo-role=master --field-selector status.phase=Running -o name | cut -d '/' -f 2 );
 
 function _psql() {
   $OC -n $OC_PROJECT exec $POD -- psql -qtA -v 'ON_ERROR_STOP=1' -c "$1"
@@ -21,19 +21,19 @@ function _pg_enabled_extension() {
   [ "$output" = "<foo>bar</foo>" ]
 }
 
-@test "citus is installed" {
-  run _pg_available_extension 'citus'
-  echo "${lines[@]}"
-  [ "$status" -eq 0 ]
-  [ "$output" = "8.2-2" ]
-}
+# @test "citus is installed" {
+#   run _pg_available_extension 'citus'
+#   echo "${lines[@]}"
+#   [ "$status" -eq 0 ]
+#   [ "$output" = "8.2-2" ]
+# }
 
-@test "citus is enabled by default" {
-  run _pg_enabled_extension 'citus'
-  echo "${lines[@]}"
-  [ "$status" -eq 0 ]
-  [ "$output" = "8.2-2" ]
-}
+# @test "citus is enabled by default" {
+#   run _pg_enabled_extension 'citus'
+#   echo "${lines[@]}"
+#   [ "$status" -eq 0 ]
+#   [ "$output" = "8.2-2" ]
+# }
 
 @test "pgcrypto is installed" {
   run _pg_available_extension 'pgcrypto'

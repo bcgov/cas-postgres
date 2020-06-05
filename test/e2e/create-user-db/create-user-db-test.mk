@@ -3,7 +3,7 @@ include $(abspath $(realpath $(lastword $(MAKEFILE_LIST)))/../../../../.pipeline
 comma := ,
 .PHONY: create-user-db
 create-user-db:
-	$(call oc_exec_all_pods,cas-postgres-patroni,create-user-db -u $(USER) -d $(DB) -p $(PASS) --owner --enable-citus)
+	$(call oc_exec_all_pods,cas-postgres-patroni,create-user-db -u $(USER) -d $(DB) -p $(PASS) --owner)
 
 .PHONY: create-user-db-privileges
 create-user-db-privileges:
@@ -13,7 +13,7 @@ create-user-db-privileges:
 	$(call oc_exec_all_pods,cas-postgres-patroni,psql -d $(DB) -c "create table schema_bar.foo (blah int);")
 	$(call oc_exec_all_pods,cas-postgres-patroni,psql -d $(DB) -c "create table schema_baz.foo (blah int);")
 
-	$(call oc_exec_all_pods,cas-postgres-patroni,create-user-db -u $(USER) -d $(DB) -p $(PASS) --enable-citus --schemas schema_foo$(comma)schema_bar --privileges select$(comma)insert)
+	$(call oc_exec_all_pods,cas-postgres-patroni,create-user-db -u $(USER) -d $(DB) -p $(PASS) --schemas schema_foo$(comma)schema_bar --privileges select$(comma)insert)
 
 .PHONY: get-user-schema-privileges
 get-user-tables-privileges:
