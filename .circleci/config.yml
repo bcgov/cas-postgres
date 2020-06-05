@@ -55,7 +55,7 @@ jobs:
       - run:
           command: |
             helm dep up helm/cas-postgres
-            helm install cas-postgres helm/cas-postgres -f helm/ggircs-postgres-dev.values.yaml --set image.tag=${CIRCLE_SHA1} --atomic --timeout 900s --namespace wksv3k-dev
+            helm install cas-postgres helm/cas-postgres --set image.tag=${CIRCLE_SHA1} --atomic --timeout 900s --namespace wksv3k-dev
           name: Deploy to dev
       - run:
           command: make test_e2e OC_PROJECT=wksv3k-dev
@@ -141,6 +141,8 @@ workflows:
           filters:
             tags:
               only: /^v.*/
+            branches:
+              ignore: gh-pages
       - build_and_push:
           name: build_and_push_sha1
           image_tag: ${CIRCLE_SHA1}
