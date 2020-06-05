@@ -15,7 +15,7 @@ done
 
 
 function _exec() {
-  $OC -n "$OC_PROJECT" exec "$pod" -- /usr/bin/env bash -c "$@"
+  $OC -n "$OC_PROJECT" exec "$pod" -- /usr/bin/env bash -c "\'$*\'"
 }
 
 function _dropdb() {

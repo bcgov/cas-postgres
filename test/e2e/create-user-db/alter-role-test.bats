@@ -15,7 +15,7 @@ until [ -n "$pod" ]; do
 done
 
 function _exec() {
-  $OC -n "$OC_PROJECT" exec "$pod" -- /usr/bin/env bash -c "$@"
+  $OC -n "$OC_PROJECT" exec "$pod" -- /usr/bin/env bash -c "\'$*\'"
 }
 
 function _dropdb() {
@@ -40,7 +40,6 @@ setup() {
   db='foodb'
   password='foopass'
   privilege='createrole'
-  _create_user_db -u "$user" -d "$db" -p "$password" --owner
 }
 
 teardown() {
@@ -49,6 +48,7 @@ teardown() {
 }
 
 @test "alter-role alters a user & adds createrole permission" {
+  _create_user_db -u "$user" -d "$db" -p "$password" --owner
   _alter_role $user $privilege
   run _exec PGPASSWORD="$password" psql -tq -U "$user" -d "$db" -c "select rolcreaterole from pg_roles where rolname=\'$user\';"
   echo "$output" # prints the lines if test fails
