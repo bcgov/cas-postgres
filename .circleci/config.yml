@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   redhat-openshift: circleci/redhat-openshift@0.2.0
   orb-tools: circleci/orb-tools@8.27.4
+  gcp-gcr: circleci/gcp-gcr@0.7.1
 
 executors:
   ruby:
@@ -20,13 +21,16 @@ jobs:
             git submodule init
             git submodule update --remote
       - run:
+          name: install helm
+          command: |
+            curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+            chmod 700 get_helm.sh
+            ./get_helm.sh
+      - run:
           name: Add Docker registry to /etc/hosts
           command: echo "172.30.1.1 docker-registry.default.svc" | sudo tee -a /etc/hosts
       - redhat-openshift/create-local-cluster-with-oc:
           skip-registry-check: true
-      - run:
-          command: docker login -u "$RED_HAT_DOCKER_USERNAME" -p "$RED_HAT_DOCKER_PASSWORD" "$RED_HAT_DOCKER_SERVER"
-          name: Log in to Red Hat docker registry
       - run:
           name: Login as cluster admin
           command: oc login -u system:admin
@@ -46,19 +50,12 @@ jobs:
           command: make configure
           name: Configure the cluster
       - run:
-          command: make build
-          name: Build image on the cluster
-      - run:
           command: make test_e2e_setup
           name: Setup for e2e test
       - run:
-          command: >
-            make install_dev
-            MASTER_CPU_REQUEST="300m" MASTER_CPU_LIMIT="300m"
-            WORKER_CPU_REQUEST="300m" WORKER_CPU_LIMIT="300m"
-            MASTER_MEMORY_REQUEST="512Mi" MASTER_MEMORY_LIMIT="512Mi"
-            WORKER_MEMORY_REQUEST="512Mi" WORKER_MEMORY_LIMIT="512Mi"
-            POSTGRESQL_WORKERS=2
+          command: |
+            helm dep up helm/cas-postgres
+            helm install cas-postgres helm/cas-postgres --set image.tag=${CIRCLE_SHA1} --atomic --timeout 900s --namespace wksv3k-dev
           name: Deploy to dev
       - run:
           command: make test_e2e OC_PROJECT=wksv3k-dev
@@ -82,26 +79,46 @@ jobs:
           command: make lint
           name: Lint the openshift yaml
 
-  build:
-    executor: redhat-openshift/default
+  build_and_push:
+    executor: gcp-gcr/default
+    parameters:
+      image_tag:
+        type: string
+      cache_version:
+        type: integer
+        default: 2
     steps:
       - checkout
+      - gcp-gcr/gcr-auth
+      - restore_cache:
+          keys:
+            - v<< parameters.cache_version>>-cas-postgres-{{ .Branch }}
+          paths:
+            - /tmp/cas-postgres.tar
       - run:
-          name: "Pull Submodules"
+          name: Load cache
           command: |
-            git submodule init
-            git submodule update --remote
-      - redhat-openshift/login-and-update-kubeconfig:
-          insecure-skip-tls-verify: true
-          openshift-platform-version: 3.x
-          server-address: $OC_SERVER_ADDRESS
-          token: $OC_TOKEN
+            set +o pipefail
+            docker load -i /tmp/cas-postgres.tar | true
       - run:
-          command: make configure
-          name: Configure imagestream to point at the current SHA1
+          name: Build application Docker image
+          command: |
+            docker build --cache-from=cas-postgres -t cas-postgres:latest -t gcr.io/${GOOGLE_PROJECT_ID}/cas-postgres:<< parameters.image_tag >> .
       - run:
-          command: make build
-          name: Build image on the remote cluster
+          name: Save Docker image layer cache
+          command: |
+            docker save -o /tmp/cas-postgres.tar cas-postgres:latest
+      - save_cache:
+          key: v<< parameters.cache_version>>-cas-postgres-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /tmp/cas-postgres.tar
+      - gcp-gcr/push-image:
+          image: cas-postgres
+          tag: << parameters.image_tag >>
+          digest-path: /tmp/digest.txt
+      - run:
+          command: |
+            echo "Digest is: $(</tmp/digest.txt)"
 
   test-unit:
     executor: ruby
@@ -120,16 +137,30 @@ jobs:
 workflows:
   test:
     jobs:
-      - lint:
-          context: cas-pipeline
-      - test-unit
-      - build:
+      - test-unit:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: gh-pages
+      - build_and_push:
+          name: build_and_push_sha1
+          image_tag: ${CIRCLE_SHA1}
           context: cas-pipeline
           requires:
-            - lint
             - test-unit
+      - build_and_push:
+          name: build_and_push_tag
+          image_tag: ${CIRCLE_TAG/v/}
+          context: cas-pipeline
+          requires:
+            - test-unit
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
       - test-local-cluster:
           context: cas-pipeline
           requires:
-            - lint
-            - test-unit
+            - build_and_push_sha1
