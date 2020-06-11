@@ -57,6 +57,8 @@ walE:
   # Path to the S3 or GCS bucket used for WAL-E base backups
   s3Bucket:
   gcsBucket:
+  # The GCS bucket folder where the logs will be updated
+  gcsBucketBackupLocation: wal
   # Name of the secret that holds the credentials to the bucket
   kubernetesSecret:
   # Maximum size of the WAL segments accumulated after the base backup to
