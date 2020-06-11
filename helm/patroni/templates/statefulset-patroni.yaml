@@ -82,7 +82,7 @@ spec:
         - name: SCOPE
           value: {{ template "patroni.fullname" . }}
         {{- if .Values.walE.enable }}
-        - name: USE_WALE
+        - name: USE_WALG
           value: {{ .Values.walE.enable | quote }}
         {{- if .Values.walE.scheduleCronJob }}
         - name: BACKUP_SCHEDULE
@@ -96,7 +96,7 @@ spec:
         - name: WAL_S3_BUCKET
           value: {{ .Values.walE.s3Bucket | quote }}
         {{else if .Values.walE.gcsBucket }}
-        - name: WAL_GCS_BUCKET
+        - name: WAL_GS_BUCKET
           value: {{ .Values.walE.gcsBucket | quote }}
         {{- if .Values.walE.kubernetesSecret }}
         - name: GOOGLE_APPLICATION_CREDENTIALS
