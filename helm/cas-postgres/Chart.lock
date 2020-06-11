@@ -1,6 +1,6 @@
 dependencies:
 - name: patroni
   repository: file://../patroni
-  version: 0.18.0
-digest: sha256:06b32de8f9cb87468f14749e3b01577cd38ef26a40d19565da14dde0fa7bd7ad
-generated: "2020-06-04T12:09:53.907968238-07:00"
+  version: 0.19.0
+digest: sha256:372d07af07c9b5313b368e1f72840e1ac38e7129afae4ea25a238dfd21b65a83
+generated: "2020-06-11T08:03:48.067187453-07:00"
