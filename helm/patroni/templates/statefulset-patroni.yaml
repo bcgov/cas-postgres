@@ -151,8 +151,9 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         readinessProbe:
+          # The pod should not accept traffic unless it is the leader
           httpGet:
-            path: /health
+            path: /read-write
             port: 8008
           initialDelaySeconds: 5
           timeoutSeconds: 1
