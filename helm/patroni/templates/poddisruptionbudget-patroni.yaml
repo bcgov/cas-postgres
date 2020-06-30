@@ -3,7 +3,7 @@ kind: PodDisruptionBudget
 metadata:
   name: {{ template "patroni.fullname" . }}-pdb
 spec:
-  minAvailable: 2
+  minAvailable: {{ sub .Values.replicaCount 1 }}
   selector:
     matchLabels:
       app: {{ template "patroni.fullname" . }}
