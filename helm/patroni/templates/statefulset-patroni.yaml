@@ -22,6 +22,7 @@ spec:
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "patroni.serviceAccountName" . }}
+      terminationGracePeriodSeconds: 3600
       containers:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -150,19 +151,15 @@ spec:
         {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
-        readinessProbe:
-          # The pod should not accept traffic unless it is the leader
-          httpGet:
-            path: /read-write
-            port: 8008
-          initialDelaySeconds: 5
-          timeoutSeconds: 1
         livenessProbe:
           httpGet:
             path: /health
             port: 8008
           initialDelaySeconds: 120
-          timeoutSeconds: 10
+          timeoutSeconds: 30
+          failureThreshold: 10
+          # timeout and failureThreshold match the defaults for
+          # https://patroni.readthedocs.io/en/latest/watchdog.html
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
