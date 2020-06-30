@@ -131,6 +131,17 @@ spec:
           value: {{ $val | quote }}
         {{- end }}
         {{- end }}
+        preStop:
+          exec:
+            command:
+              - /usr/bin/env
+              - bash
+              - -c
+              - |
+                # switch leader pod if the current pod is the leader
+                if curl --fail http://localhost:8008/read-write; then
+                  patronictl switchover --force
+                fi
         ports:
         - containerPort: 8008
         - containerPort: 5432
