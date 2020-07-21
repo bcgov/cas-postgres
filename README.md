@@ -4,7 +4,7 @@
 
 Postgres container image intended for OpenShift and general usage
 
-## Steps for a complete fresh install (will lose all data)
+### Steps for a complete fresh install (will lose all data)
   - helm delete the cas-ciip-portal release `ex: helm delete --namespace wksv3k-dev cas-ciip-portal`
   - delete the cas-ciip-portal patroni pvcs's `(can be done from the openshift ui under storage)`
   - delete the cas-ciip-portal patroni configmaps `(can be done from the openshift ui under Resources -> Configmaps)`
