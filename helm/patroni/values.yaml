@@ -48,7 +48,9 @@ postgresql:
     on_role_change: /usr/share/container-scripts/postgresql/kill_pod_on_demote.sh
 
 # Extra custom environment variables.
-env: {}
+env: {
+  CALLBACK_SCRIPT: /usr/share/container-scripts/postgresql/kill_pod_on_demote.sh
+}
 
 walE:
   # Specifies whether Wal-E should be enabled
