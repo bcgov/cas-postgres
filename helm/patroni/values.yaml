@@ -43,6 +43,9 @@ consul:
   deployChart: false
   # Leave blank to use vendored consul chart
   hosts:
+postgresql:
+  callbacks:
+    on_role_change: /usr/share/container-scripts/postgresql/kill_pod_on_demote.sh
 
 # Extra custom environment variables.
 env: {}
