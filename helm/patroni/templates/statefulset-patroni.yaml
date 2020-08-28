@@ -125,6 +125,11 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
         {{- if .Values.env }}
         {{- range $key, $val := .Values.env }}
         - name: {{  $key | quote | upper }}

@@ -23,7 +23,7 @@ RUN apt-get install libnss-wrapper && apt-get clean
 # Get prefix path to scripts rather than hard-code it
 ENV CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/postgresql
 
-ENV CALLBACK_SCRIPT=/usr/share/container-scripts/postgresql/kill_pod_on_demote.sh
+COPY ./root/usr/share/container-scripts/postgresql/callback_endpoint.py /scripts
 
 ENTRYPOINT ["container-entrypoint"]
 

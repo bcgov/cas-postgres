@@ -43,14 +43,10 @@ consul:
   deployChart: false
   # Leave blank to use vendored consul chart
   hosts:
-postgresql:
-  callbacks:
-    on_role_change: /usr/share/container-scripts/postgresql/kill_pod_on_demote.sh
 
-# Extra custom environment variables.
-env: {
-  CALLBACK_SCRIPT: /usr/share/container-scripts/postgresql/kill_pod_on_demote.sh
-}
+env:
+  # Flag to enable/disable killing the pod on demote action
+  KILL_POD_ON_DEMOTE: true
 
 walE:
   # Specifies whether Wal-E should be enabled
