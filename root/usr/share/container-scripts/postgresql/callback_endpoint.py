@@ -41,6 +41,30 @@ def patch_master_endpoint(api, namespace, cluster):
     body = k8s_client.V1Endpoints(subsets=subsets)
     return api.patch_namespaced_endpoints(cluster, namespace, body)
 
+import kubernetes.client
+import kubernetes.config
+from kubernetes.stream import stream
+from kubernetes.client.rest import ApiException
+from pprint import pprint
+
+def delete_pod(namespace, pod_name):
+  try:
+      kubernetes.config.load_incluster_config()
+  except:
+      kubernetes.config.load_kube_config()
+
+  configuration = k8s_client.Configuration()
+  api_instance = k8s_client.CoreV1Api(kubernetes.client.ApiClient(configuration))
+
+  try:
+    delete_options = k8s_client.V1DeleteOptions()
+    api_response = api_instance.delete_namespaced_pod(
+        name=pod_name,
+        namespace=namespace,
+        body=delete_options)
+    print(api_response)
+  except ApiException as e:
+      print("Exception when calling CoreV1Api->delete_namespaced_pod: %s\n" % e)
 
 def main():
     logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO)
@@ -53,19 +77,16 @@ def main():
     k8s_api = CoreV1Api()
 
     namespace = os.environ['POD_NAMESPACE']
+    pod_name = os.environ['POD_NAME']
 
     if role == 'master' and action in ('on_start', 'on_role_change'):
         patch_master_endpoint(k8s_api, namespace, cluster)
 
-    print('deleting replica...')
-    print(role, action, os.environ['KILL_POD_ON_DEMOTE'], os.environ['POD_NAME'])
     if role == 'replica' and action == 'on_role_change' and os.environ['KILL_POD_ON_DEMOTE']:
-      delete_options = client.V1DeleteOptions()
-      api_response = k8s_api.delete_namespaced_pod(
-        name=os.environ['POD_NAME'],
-        namespace=namespace,
-        body=delete_options)
-      print(api_response)
+        print('deleting replica...')
+        print(role, action, os.environ['KILL_POD_ON_DEMOTE'], os.environ['POD_NAME'])
+        delete_pod(namespace, pod_name)
+
 
 if __name__ == '__main__':
     main()
