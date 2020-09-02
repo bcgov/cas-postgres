@@ -23,7 +23,7 @@ RUN apt-get install libnss-wrapper && apt-get clean
 # Get prefix path to scripts rather than hard-code it
 ENV CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/postgresql
 
-COPY /usr/share/container-scripts/postgresql/callback_endpoint.py /scripts
+COPY /root/usr/share/container-scripts/postgresql/callback_endpoint.py /scripts/callback_endpoint.py
 
 ENTRYPOINT ["container-entrypoint"]
 
