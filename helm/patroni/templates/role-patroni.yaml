@@ -24,6 +24,9 @@ rules:
   resources: ["services"]
   verbs:
   - create
+  - patch
+  - get
+  - list
 - apiGroups: [""]
   resources: ["endpoints"]
   verbs:
@@ -44,5 +47,11 @@ rules:
   - list
   - patch
   - update
+  - watch
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs:
+  - get
+  - list
   - watch
 {{- end }}
