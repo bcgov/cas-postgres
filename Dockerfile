@@ -20,6 +20,8 @@ RUN apt-get update && \
 # libnss-wrapper is needed for openshift anyuid support
 RUN apt-get install libnss-wrapper && apt-get clean
 
+RUN pip install kubernetes
+
 # Get prefix path to scripts rather than hard-code it
 ENV CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/postgresql
 
