@@ -20,7 +20,7 @@ RUN apt-get update && \
 # libnss-wrapper is needed for openshift anyuid support
 RUN apt-get install libnss-wrapper && apt-get clean
 
-RUN apt-get install -y python-pip
+RUN apt-get install -y python-pip python-setuptools
 RUN pip install kubernetes
 
 # Get prefix path to scripts rather than hard-code it
