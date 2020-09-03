@@ -48,10 +48,4 @@ rules:
   - patch
   - update
   - watch
-- apiGroups: [""]
-  resources: ["nodes"]
-  verbs:
-  - get
-  - list
-  - watch
 {{- end }}
