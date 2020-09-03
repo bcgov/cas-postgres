@@ -79,6 +79,8 @@ def main():
     namespace = os.environ['POD_NAMESPACE']
     pod_name = os.environ['POD_NAME']
 
+    print(role, action, os.environ['KILL_POD_ON_DEMOTE'], os.environ['POD_NAME'])
+
     if role == 'master' and action in ('on_start', 'on_role_change'):
         patch_master_endpoint(k8s_api, namespace, cluster)
 
