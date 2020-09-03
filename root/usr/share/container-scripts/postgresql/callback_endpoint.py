@@ -6,7 +6,9 @@ import socket
 import sys
 import time
 
-from kubernetes import client as k8s_client, config as k8s_config
+import kubernetes.client as k8s_client
+import kubernetes.config as k8s_config
+from k8s_client.rest import ApiException
 from urllib3.exceptions import HTTPError
 from six.moves.http_client import HTTPException
 
@@ -41,20 +43,14 @@ def patch_master_endpoint(api, namespace, cluster):
     body = k8s_client.V1Endpoints(subsets=subsets)
     return api.patch_namespaced_endpoints(cluster, namespace, body)
 
-import kubernetes.client
-import kubernetes.config
-from kubernetes.stream import stream
-from kubernetes.client.rest import ApiException
-from pprint import pprint
-
 def delete_pod(namespace, pod_name):
   try:
-      kubernetes.config.load_incluster_config()
+      k8s_client.load_incluster_config()
   except:
-      kubernetes.config.load_kube_config()
+      k8s_client.load_kube_config()
 
   configuration = k8s_client.Configuration()
-  api_instance = k8s_client.CoreV1Api(kubernetes.client.ApiClient(configuration))
+  api_instance = k8s_client.CoreV1Api(k8s_client.ApiClient(configuration))
 
   try:
     delete_options = k8s_client.V1DeleteOptions()
