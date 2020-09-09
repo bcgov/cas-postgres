@@ -11,9 +11,9 @@ import kubernetes.config as k8s_config
 from kubernetes.client.rest import ApiException
 from urllib3.exceptions import HTTPError
 from six.moves.http_client import HTTPException
+from pprint import pprint
 
 logger = logging.getLogger(__name__)
-
 
 class CoreV1Api(k8s_client.CoreV1Api):
 
@@ -45,9 +45,9 @@ def patch_master_endpoint(api, namespace, cluster):
 
 def delete_pod(namespace, pod_name):
   try:
-      k8s_client.load_incluster_config()
+      k8s_config.load_incluster_config()
   except:
-      k8s_client.load_kube_config()
+      k8s_config.load_kube_config()
 
   configuration = k8s_client.Configuration()
   api_instance = k8s_client.CoreV1Api(k8s_client.ApiClient(configuration))
@@ -74,6 +74,9 @@ def main():
 
     namespace = os.environ['POD_NAMESPACE']
     pod_name = 'cas-postgres-patroni-0'#os.environ['POD_NAME']
+
+    envs = os.environ
+    pprint(dict(envs), width = 1)
 
     print(role, action)#, os.environ['KILL_POD_ON_DEMOTE'])
 
