@@ -21,8 +21,8 @@ RUN apt-get update && \
 RUN apt-get install libnss-wrapper && apt-get clean
 
 RUN apt-get install -y python3-venv python3-pip && \
-    python3 pip3 uninstall kubernetes && \
-    python3 pip3 install kubernetes
+    pip3 uninstall kubernetes && \
+    pip3 install kubernetes
 
 # Get prefix path to scripts rather than hard-code it
 ENV CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/postgresql
