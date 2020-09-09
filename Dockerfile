@@ -21,7 +21,6 @@ RUN apt-get update && \
 RUN apt-get install libnss-wrapper && apt-get clean
 
 RUN apt-get install -y python3-venv python3-pip && \
-    pip3 uninstall kubernetes && \
     pip3 install kubernetes
 
 # Get prefix path to scripts rather than hard-code it
