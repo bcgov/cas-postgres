@@ -8,7 +8,7 @@ import time
 
 import kubernetes.client as k8s_client
 import kubernetes.config as k8s_config
-from k8s_client.rest import ApiException
+from kubernetes.client.rest import ApiException
 from urllib3.exceptions import HTTPError
 from six.moves.http_client import HTTPException
 
