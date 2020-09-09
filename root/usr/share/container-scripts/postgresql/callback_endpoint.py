@@ -75,14 +75,14 @@ def main():
     namespace = os.environ['POD_NAMESPACE']
     pod_name = 'cas-postgres-patroni-0'#os.environ['POD_NAME']
 
-    print(role, action, os.environ['KILL_POD_ON_DEMOTE'])
+    print(role, action)#, os.environ['KILL_POD_ON_DEMOTE'])
 
     if role == 'master' and action in ('on_start', 'on_role_change'):
         patch_master_endpoint(k8s_api, namespace, cluster)
 
-    if role == 'replica' and action == 'on_role_change' and os.environ['KILL_POD_ON_DEMOTE']:
+    if role == 'replica' and action == 'on_role_change': #and os.environ['KILL_POD_ON_DEMOTE']:
         print('deleting replica...')
-        print(role, action, os.environ['KILL_POD_ON_DEMOTE'])
+        print(role, action)#, os.environ['KILL_POD_ON_DEMOTE'])
         delete_pod(namespace, pod_name)
 
 
