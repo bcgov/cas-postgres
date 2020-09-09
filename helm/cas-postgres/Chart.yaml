@@ -6,5 +6,5 @@ version: 0.5.0
 appVersion: 0.1.0
 dependencies:
 - name: patroni
-  version: "0.21.0"
+  version: "0.21.1"
   repository: "file://../patroni"

@@ -48,4 +48,5 @@ rules:
   - patch
   - update
   - watch
+  - delete
 {{- end }}
