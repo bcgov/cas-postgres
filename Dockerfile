@@ -26,9 +26,6 @@ RUN apt-get install -y python3-venv python3-pip && \
 # Get prefix path to scripts rather than hard-code it
 ENV CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/postgresql
 
-ENV POD_NAME="$POD_NAME"
-ENV KILL_POD_ON_DEMOTE="$KILL_POD_ON_DEMOTE"
-
 COPY /root/usr/share/container-scripts/postgresql/callback_endpoint.py /scripts/callback_endpoint.py
 
 ENTRYPOINT ["container-entrypoint"]

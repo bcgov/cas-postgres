@@ -22,6 +22,9 @@ fi
 export POSTGRESQL_RECOVERY_FILE=$HOME/openshift-custom-recovery.conf
 export POSTGRESQL_CONFIG_FILE=$HOME/openshift-custom-postgresql.conf
 
+export POD_NAME=$POD_NAME
+export KILL_POD_ON_DEMOTE=$KILL_POD_ON_DEMOTE
+
 postinitdb_actions=
 
 # match . files when moving userdata below
