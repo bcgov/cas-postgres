@@ -1,8 +1,8 @@
 patroni:
   image:
-    repository:  gcr.io/ggl-cas-storage/cas-postgres
+    repository: gcr.io/ggl-cas-storage/cas-postgres
     pullPolicy: Always
-    tag: "0.1.0"
+    tag: "0.1.1"
 
   replicaCount: 2
 
@@ -20,8 +20,9 @@ patroni:
     configmaps:
       enable: true
   walE:
-    enable: false
-     # the GCS bucket name should be {{ namespace }}-{{ gcs.bucketSuffix }}
+    enable:
+      false
+      # the GCS bucket name should be {{ namespace }}-{{ gcs.bucketSuffix }}
     gcsBucket:
     # kubernetesSecret should be gcp-{{ namespace }}-{{ gcs.bucketSuffix }}-service-account-key
     kubernetesSecret:
