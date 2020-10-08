@@ -28,7 +28,7 @@ teardown() {
 @test "create-user-db prints an error if --password is missing" {
     user='foo'
     db='bar'
-    run "$create_user" --user $user --db
+    run "$create_user" --user $user --db $db
     echo "$output" # prints the lines if test fails
     [ $status -eq 1 ]
     [ "${lines[0]}" == "The --password parameter is required." ]
