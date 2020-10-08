@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -eo pipefail
 
 # =============================================================================
 # Usage:
@@ -85,11 +85,11 @@ _psql() {
 
 create_db_query="create database $db;"
 
-read -r -d '' create_user_query<<EOF
+create_user_query="
 create user $user;
 revoke all on database $db from public;
 revoke all on database postgres from $user;
-EOF
+"
 
 set_password_query="alter user $user with encrypted password '$password';"
 
