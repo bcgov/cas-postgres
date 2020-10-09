@@ -82,13 +82,26 @@ _psql() {
   PGOPTIONS='--client-min-messages=warning' psql -qtA --set ON_ERROR_STOP=1 "$@" 2>&1
 }
 
-
-create_db_query="create database $db;"
+#TODO: Fix this if we use Citus again, as it only works if executed in psql
+create_db_query="
+SELECT 'CREATE DATABASE $db'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$db')\gexec
+"
 
 create_user_query="
-create user $user;
-revoke all on database $db from public;
-revoke all on database postgres from $user;
+DO
+\$do\$
+BEGIN
+   IF NOT EXISTS (
+      SELECT FROM pg_catalog.pg_roles  -- SELECT list can be empty for this
+      WHERE  rolname = '$user') THEN
+
+      CREATE USER $user;
+   END IF;
+  revoke all on database $db from public;
+  revoke all on database postgres from $user;
+END
+\$do\$;
 "
 
 set_password_query="alter user $user with encrypted password '$password';"
@@ -106,24 +119,8 @@ else
   done
 fi
 
-# Create DB on the coordinator
-coordinator_out=$(_psql -c "$create_db_query")
-if [ "$coordinator_out" == "ERROR:  database \"$db\" already exists" ]; then
-  echo "Database \"$db\" already exists on coordinator node"
-elif [[ $coordinator_out == ERROR* ]]; then
-  echo "$coordinator_out"
-  exit 1
-fi
-
-
-coordinator_out=$(_psql -d "$db" <<< "$create_user_query")
-if [ "$coordinator_out" == "ERROR:  role \"$user\" already exists" ]; then
-  echo "User \"$user\" already exists on coordinator node"
-elif [[ $coordinator_out == ERROR* ]]; then
-  echo "$coordinator_out"
-  exit 1
-fi
-
+_psql <<< "$create_db_query"
+_psql -d "$db" <<< "$create_user_query"
 _psql -d "$db" <<< "$set_password_query"
 
 # set the user schema privileges
