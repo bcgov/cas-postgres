@@ -3,8 +3,6 @@ LABEL maintainer="Matthieu Foucault <matthieu@button.is>"
 
 COPY root /
 
-RUN /usr/libexec/fix-permissions "$PGHOME"
-
 # TODO: pg needs to be running to check TAP install
 # make installcheck && \
 RUN apt-get update && \
