@@ -20,9 +20,9 @@ patroni:
     configmaps:
       enable: true
   walE:
-    enable:
-      false
-      # the GCS bucket name should be {{ namespace }}-{{ gcs.bucketSuffix }}
+    enable: false
+    retainBackups: 90
+    # the GCS bucket name should be {{ namespace }}-{{ gcs.bucketSuffix }}
     gcsBucket:
     # kubernetesSecret should be gcp-{{ namespace }}-{{ gcs.bucketSuffix }}-service-account-key
     kubernetesSecret:
