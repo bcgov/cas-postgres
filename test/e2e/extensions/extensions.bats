@@ -33,20 +33,6 @@ function _pg_enabled_extension() {
   [ "$output" = "<foo>bar</foo>" ]
 }
 
-# @test "citus is installed" {
-#   run _pg_available_extension 'citus'
-#   echo "${lines[@]}"
-#   [ "$status" -eq 0 ]
-#   [ "$output" = "8.2-2" ]
-# }
-
-# @test "citus is enabled by default" {
-#   run _pg_enabled_extension 'citus'
-#   echo "${lines[@]}"
-#   [ "$status" -eq 0 ]
-#   [ "$output" = "8.2-2" ]
-# }
-
 @test "pgcrypto is installed" {
   run _pg_available_extension 'pgcrypto'
   echo "${lines[@]}"
