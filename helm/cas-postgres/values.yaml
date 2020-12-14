@@ -2,7 +2,7 @@ patroni:
   image:
     repository: gcr.io/ggl-cas-storage/cas-postgres
     pullPolicy: Always
-    tag: "0.1.2"
+    tag: "0.2.0"
 
   replicaCount: 2
 
