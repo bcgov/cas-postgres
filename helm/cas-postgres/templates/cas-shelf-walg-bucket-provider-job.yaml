@@ -15,7 +15,7 @@ spec:
   template:
     metadata:
       name: {{ template "cas-postgres.fullname" . }}-cas-shelf-walg-bucket-provider
-      labels: {{ include "cas-postgres.labels" . | nindent 12 }}
+      labels: {{ include "cas-postgres.labels" . | nindent 8 }}
     spec:
       containers:
         - name: {{ template "cas-postgres.fullname" . }}-cas-shelf-walg-bucket-provider

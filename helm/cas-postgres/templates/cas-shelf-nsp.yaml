@@ -1,4 +1,4 @@
-{{ - if .Values.patroni.walE.enable }}
+{{- if .Values.patroni.walE.enable }}
 kind: NetworkSecurityPolicy
 apiVersion: security.devops.gov.bc.ca/v1alpha1
 metadata:
