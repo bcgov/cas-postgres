@@ -6,6 +6,7 @@ metadata:
   annotations:
     "helm.sh/hook": "pre-install,pre-upgrade"
     "helm.sh/hook-delete-policy": "before-hook-creation"
+    "helm.sh/hook-weight": "0"
 spec:
   parallelism: 1
   completions: 1
@@ -14,6 +15,7 @@ spec:
   template:
     metadata:
       name: {{ template "cas-postgres.fullname" . }}-cas-shelf-walg-bucket-provider
+      labels: {{ include "cas-postgres.labels" . | nindent 12 }}
     spec:
       containers:
         - name: {{ template "cas-postgres.fullname" . }}-cas-shelf-walg-bucket-provider

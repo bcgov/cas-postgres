@@ -10,7 +10,7 @@ patroni:
   credentials:
     random: true
   persistentVolume:
-    storageClass: gluster-block
+    storageClass: netapp-block-storage
     size: 1Gi
   # As per https://patroni.readthedocs.io/en/latest/kubernetes.html#use-configmaps
   # "in some cases, for instance, when running on OpenShift, there is no alternative to using ConfigMaps."
