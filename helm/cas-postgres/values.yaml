@@ -1,3 +1,9 @@
+casShelf:
+  image:
+    repository: gcr.io/ggl-cas-storage/cas-shelf-tfe-add-app
+    pullPolicy: Always
+    tag: "0.2"
+
 patroni:
   image:
     repository: gcr.io/ggl-cas-storage/cas-postgres

@@ -26,8 +26,8 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
-          image: gcr.io/ggl-cas-storage/cas-shelf-tfe-add-app:0.1
-          imagePullPolicy: Always
+          image: {{ .Values.casShelf.image.repository }}:{{ .Values.casShelf.image.tag }}
+          imagePullPolicy: {{ .Values.casShelf.image.pullPolicy }}
           env:
             - name: TFC_TOKEN
               valueFrom:
