@@ -3,6 +3,15 @@ entries:
   cas-postgres:
   - apiVersion: v2
     appVersion: 0.2.0
+    created: "2020-12-22T14:09:35.284567796-08:00"
+    description: Postgres database for the CAS team
+    digest: a7660f20270dacfe10a1c61afcdcefb304b4701e44e3076d8549c56d8111a08e
+    name: cas-postgres
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/cas-postgres-0.7.3/cas-postgres-0.7.3.tgz
+    version: 0.7.3
+  - apiVersion: v2
+    appVersion: 0.2.0
     created: "2020-12-21T10:58:44.779155569-08:00"
     description: Postgres database for the CAS team
     digest: 2e6e399b4065598810a7fa6e44e2b6966c71f563c1701351282a73787ed8d7d7
