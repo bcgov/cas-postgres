@@ -1,0 +1,14 @@
+{{- if .Values.patroni.walE.enable }}
+kind: NetworkSecurityPolicy
+apiVersion: security.devops.gov.bc.ca/v1alpha1
+metadata:
+  name: {{ include "cas-postgres.fullname" . }}-patroni-egress
+  labels: {{ include "cas-postgres.labels" . | nindent 4 }}
+spec:
+  description: allows the patroni database to communicate with external networks
+  source:
+    - - $namespace={{ .Release.Namespace }}
+      - release={{ include "cas-postgres.fullname" . }}
+  destination:
+    - - ext:network=any
+{{- end }}
