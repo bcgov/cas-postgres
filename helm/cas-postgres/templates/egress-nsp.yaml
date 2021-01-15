@@ -8,7 +8,7 @@ spec:
   description: allows the patroni database to communicate with external networks
   source:
     - - $namespace={{ .Release.Namespace }}
-      - release={{ include "cas-postgres.fullname" . }}
+      - release={{ .Release.Name }}
   destination:
     - - ext:network=any
 {{- end }}
