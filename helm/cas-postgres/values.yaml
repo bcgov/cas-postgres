@@ -16,7 +16,7 @@ patroni:
   credentials:
     random: true
   persistentVolume:
-    storageClass: netapp-block-storage
+    storageClass: netapp-block-standard
     size: 1Gi
   # As per https://patroni.readthedocs.io/en/latest/kubernetes.html#use-configmaps
   # "in some cases, for instance, when running on OpenShift, there is no alternative to using ConfigMaps."
