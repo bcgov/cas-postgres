@@ -1,3 +1,9 @@
+casShelf:
+  image:
+    repository: gcr.io/ggl-cas-storage/cas-shelf-tfe-add-app
+    pullPolicy: Always
+    tag: "0.1"
+
 patroni:
   image:
     repository: gcr.io/ggl-cas-storage/cas-postgres
@@ -10,7 +16,7 @@ patroni:
   credentials:
     random: true
   persistentVolume:
-    storageClass: gluster-block
+    storageClass: netapp-block-standard
     size: 1Gi
   # As per https://patroni.readthedocs.io/en/latest/kubernetes.html#use-configmaps
   # "in some cases, for instance, when running on OpenShift, there is no alternative to using ConfigMaps."

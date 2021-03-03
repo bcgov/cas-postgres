@@ -6,12 +6,16 @@ metadata:
   annotations:
     "helm.sh/hook": "pre-install,pre-upgrade"
     "helm.sh/hook-delete-policy": "before-hook-creation"
+    "helm.sh/hook-weight": "0"
 spec:
   parallelism: 1
   completions: 1
+  backoffLimit: 0
+  activeDeadlineSeconds: 1200
   template:
     metadata:
       name: {{ template "cas-postgres.fullname" . }}-cas-shelf-walg-bucket-provider
+      labels: {{ include "cas-postgres.labels" . | nindent 8 }}
     spec:
       containers:
         - name: {{ template "cas-postgres.fullname" . }}-cas-shelf-walg-bucket-provider
@@ -22,7 +26,8 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
-          image: docker.pkg.github.com/bcgov/cas-shelf/cas-shelf-tfe-add-app:0.1
+          image: {{ .Values.casShelf.image.repository }}:{{ .Values.casShelf.image.tag }}
+          imagePullPolicy: {{ .Values.casShelf.image.pullPolicy }}
           env:
             - name: TFC_TOKEN
               valueFrom:
