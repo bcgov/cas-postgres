@@ -3,6 +3,20 @@ entries:
   cas-postgres:
   - apiVersion: v2
     appVersion: 0.2.0
+    created: "2021-05-17T23:03:30.419008537Z"
+    dependencies:
+    - name: patroni
+      repository: file://../patroni
+      version: 0.21.2
+    description: Postgres database for the CAS team
+    digest: 631884a7c5d9bd8289d0cbe4f3822f20d6aa17b478c34be051587d33aed7cba2
+    name: cas-postgres
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/cas-postgres-0.8.1/cas-postgres-0.8.1.tgz
+    version: 0.8.1
+  - apiVersion: v2
+    appVersion: 0.2.0
     created: "2021-03-03T18:50:25.962731999Z"
     dependencies:
     - name: patroni
@@ -168,4 +182,34 @@ entries:
     urls:
     - https://github.com/bcgov/cas-postgres/releases/download/cas-postgres-0.1.0/cas-postgres-0.1.0.tgz
     version: 0.1.0
-generated: "2021-03-03T18:50:25.962878499Z"
+  patroni:
+  - apiVersion: v1
+    appVersion: 1.6-p3
+    created: "2021-05-17T23:03:30.565724351Z"
+    dependencies:
+    - condition: etcd.deployChart
+      name: etcd
+      repository: https://charts.helm.sh/incubator
+      version: 0.6.2
+    - condition: zookeeper.deployChart
+      name: zookeeper
+      repository: https://charts.helm.sh/incubator
+      version: 1.0.0
+    - condition: consul.deployChart
+      name: consul
+      repository: https://charts.helm.sh/stable
+      version: 3.6.1
+    description: 'Highly available elephant herd: HA PostgreSQL cluster.'
+    digest: f236a6893908b688d907ab0f5401d31f26548f1a2aa841d2ec07a128c4f8eb9d
+    home: https://github.com/zalando/patroni
+    maintainers:
+    - email: matthieu@button.is
+      name: Matthieu Foucault
+    name: patroni
+    sources:
+    - https://github.com/zalando/patroni
+    - https://github.com/zalando/spilo
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/patroni-0.21.2/patroni-0.21.2.tgz
+    version: 0.21.2
+generated: "2021-05-17T23:03:30.565930551Z"
