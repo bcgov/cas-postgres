@@ -165,14 +165,13 @@ spec:
 {{ toYaml .Values.resources | indent 10 }}
         livenessProbe:
           httpGet:
-            path: /liveness
+            path: /health
             port: 8008
           initialDelaySeconds: 120
-          periodSeconds: 10
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 3
-          # https://patroni.readthedocs.io/en/latest/rest_api.html#health-check-endpoints
+          timeoutSeconds: 30
+          failureThreshold: 10
+          # timeout and failureThreshold match the defaults for
+          # https://patroni.readthedocs.io/en/latest/watchdog.html
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
