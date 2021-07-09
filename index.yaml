@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   cas-postgres:
   - apiVersion: v2
+    appVersion: 0.2.1
+    created: "2021-07-09T22:10:06.946948167Z"
+    dependencies:
+    - name: patroni
+      repository: file://../patroni
+      version: 0.21.3
+    description: Postgres database for the CAS team
+    digest: 01b89d4e76a785041c5c505dbe27698d467891059d7dbcea83c419d141584df7
+    name: cas-postgres
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/cas-postgres-0.8.2/cas-postgres-0.8.2.tgz
+    version: 0.8.2
+  - apiVersion: v2
     appVersion: 0.2.0
     created: "2021-05-17T23:03:30.419008537Z"
     dependencies:
@@ -185,6 +199,35 @@ entries:
   patroni:
   - apiVersion: v1
     appVersion: 1.6-p3
+    created: "2021-07-09T22:10:07.106853216Z"
+    dependencies:
+    - condition: etcd.deployChart
+      name: etcd
+      repository: https://charts.helm.sh/incubator
+      version: 0.6.2
+    - condition: zookeeper.deployChart
+      name: zookeeper
+      repository: https://charts.helm.sh/incubator
+      version: 1.0.0
+    - condition: consul.deployChart
+      name: consul
+      repository: https://charts.helm.sh/stable
+      version: 3.6.1
+    description: 'Highly available elephant herd: HA PostgreSQL cluster.'
+    digest: 9d9aeae122c7379206ad3a7448cccf2da03fcec7c161cf2579e75030147ba84d
+    home: https://github.com/zalando/patroni
+    maintainers:
+    - email: matthieu@button.is
+      name: Matthieu Foucault
+    name: patroni
+    sources:
+    - https://github.com/zalando/patroni
+    - https://github.com/zalando/spilo
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/patroni-0.21.3/patroni-0.21.3.tgz
+    version: 0.21.3
+  - apiVersion: v1
+    appVersion: 1.6-p3
     created: "2021-05-17T23:03:30.565724351Z"
     dependencies:
     - condition: etcd.deployChart
@@ -212,4 +255,4 @@ entries:
     urls:
     - https://github.com/bcgov/cas-postgres/releases/download/patroni-0.21.2/patroni-0.21.2.tgz
     version: 0.21.2
-generated: "2021-05-17T23:03:30.565930551Z"
+generated: "2021-07-09T22:10:07.107130123Z"
