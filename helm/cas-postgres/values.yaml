@@ -8,7 +8,7 @@ patroni:
   image:
     repository: gcr.io/ggl-cas-storage/cas-postgres
     pullPolicy: Always
-    tag: "0.2.1"
+    tag: "0.3.0"
 
   replicaCount: 2
 
