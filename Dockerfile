@@ -1,5 +1,5 @@
-FROM registry.opensource.zalan.do/acid/spilo-12:1.6-p5
-LABEL maintainer="Matthieu Foucault <matthieu@button.is>"
+FROM registry.opensource.zalan.do/acid/spilo-14:2.1-p2
+LABEL maintainer="GGIRCS Team <ggircs@gov.bc.ca>"
 
 COPY root /
 
