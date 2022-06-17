@@ -26,3 +26,27 @@ Installation of the cas-postgres helm chart is simply done via the `helm install
 - delete the cas-ciip-portal patroni configmaps `(can be done from the openshift ui under Resources -> Configmaps)`
 - the trigger-dag job may possibly need to be deleted as well. Look for the job in the openshift ui under `Resources -> Other Resources`, if you find the job, delete it.
 - clear the namespace's gcs ciip-backup box in google storage `ex: wksv3k-dev-ciip-backups`
+
+
+### Point in Time Recovery
+
+In the event a database needs to be recovered from a backup to a specific point in time, these are the steps to follow. Patroni is shipped with a [clone_with_wale](https://app.zenhub.com/workspaces/climate-action-secretariat-60ca4121764d710011481ca2/issues/bcgov/cas-cif/751) method that we can leverage to handle this for us with the addition of a few environment variables.
+
+These steps assume you are using Google Cloud to store backups. If you are using something else (like S3), the process should be similar for other providers and the necessary environment variables are described in the `configure_spilo` script [here](https://github.com/zalando/spilo/blob/30977cc4bb041dcf2d461d39e109eef4d377272f/postgres-appliance/scripts/configure_spilo.py#L753).
+
+#### Steps
+
+- Add the following environment variables to your patroni statefulset:
+  - `CLONE_SCOPE`: \<patroni-cluster-name\>
+  - `CLONE_WITH_WALE`: true
+  - `CLONE_TARGET_TIME`: \<timestamp-with-timezone-to-recover-to\> example: 2022-06-05 08:00:00-08:00
+  - `CLONE_WALG_GS_PREFIX`: \<google-cloud-prefix\> example: gs://[bucket-name]/[folder-name]
+  - `CLONE_GOOGLE_APPLICATION_CREDENTIALS`: \<path-to-json-credentials\> documentation: [Google Cloud Authentication](https://cloud.google.com/docs/authentication/production#passing_variable)
+
+  Note: You likely already have `WALG_GS_PREFIX` and `GOOGLE_APPLICATION_CREDENTIALS` set as environment variables since they're needed to perform backups. The `clone_with_wale` method specifically looks for these variables with the `CLONE_` prefix, so just copying the contents of these existing environment variables into new variables prefixed with `CLONE_` is all that is needed here.
+- Scale the patroni statefulset down to 0
+- Delete the patroni configmaps
+- Delete the patroni PVCs
+- Scale up the patroni statefulset
+
+Patroni will then start up your database and restore to the point defined in `CLONE_TARGET_TIME`.
