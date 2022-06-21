@@ -37,16 +37,24 @@ These steps assume you are using Google Cloud to store backups. If you are using
 #### Steps
 
 - Scale the patroni statefulset down to 0
-- Delete the patroni configmaps
-- Delete the patroni PVCs
+- Delete the patroni configmaps (any configmaps prefixed by your patroni-cluster-name)
+  - example: \<patroni-cluster\>-leader, \<patroni-cluster\>-config, \<patroni-cluster\>-failover
+- Delete the patroni PVCs relating to your cluster
+  - example: storage-volume-\<patroni-cluster\>-0, storage-volume-\<patroni\>-1
 - Add the following environment variables to your patroni statefulset:
   - `CLONE_SCOPE`: \<patroni-cluster-name\>
-  - `CLONE_WITH_WALE`: true
-  - `CLONE_TARGET_TIME`: \<timestamp-with-timezone-to-recover-to\> example: 2022-06-05 08:00:00-08:00
-  - `CLONE_WALG_GS_PREFIX`: \<google-cloud-prefix\> example: gs://[bucket-name]/[folder-name]
-  - `CLONE_GOOGLE_APPLICATION_CREDENTIALS`: \<path-to-json-credentials\> documentation: [Google Cloud Authentication](https://cloud.google.com/docs/authentication/production#passing_variable)
+  - `CLONE_METHOD`: CLONE_WITH_WALE
+  - `CLONE_TARGET_TIME`: \<timestamp-with-timezone-to-recover-to\>
+    - example: 2022-06-05 08:00:00-08:00
+  - `CLONE_WALG_GS_PREFIX`: \<google-cloud-prefix\>
+    - example: gs://[bucket-name]/[folder-name]
+  - `CLONE_GOOGLE_APPLICATION_CREDENTIALS`: \<path-to-json-credentials\>
+    - documentation: [Google Cloud Authentication](https://cloud.google.com/docs/authentication/production#passing_variable)
+  - `PGVERSION`: \<major-postgres-version-to-restore-to\> example: 12
+    - `PGVERSION` is optional, but if the major version of your postgres backup is older than the psql version you are using, then it will automatically upgrade Posgtgres during restore and begin an entirely new timeline starting at 00000001. This will cause issues with replication as the replica will become confused about what timeline to bootstrap from when starting up.
 
   Note: You likely already have `WALG_GS_PREFIX` and `GOOGLE_APPLICATION_CREDENTIALS` set as environment variables since they're needed to perform backups. The `clone_with_wale` method specifically looks for these variables with the `CLONE_` prefix, so just copying the contents of these existing environment variables into new variables prefixed with `CLONE_` is all that is needed here.
+
 - Scale up the patroni statefulset
 
 Patroni will then start up your database and restore to the point defined in `CLONE_TARGET_TIME`.
