@@ -55,6 +55,72 @@ These steps assume you are using Google Cloud to store backups. If you are using
 
   Note: You likely already have `WALG_GS_PREFIX` and `GOOGLE_APPLICATION_CREDENTIALS` set as environment variables since they're needed to perform backups. The `clone_with_wale` method specifically looks for these variables with the `CLONE_` prefix, so just copying the contents of these existing environment variables into new variables prefixed with `CLONE_` is all that is needed here.
 
+  **Do not forget to save your environment variables. The SAVE button is at the bottom of the page**
+
 - Scale up the patroni statefulset
 
 Patroni will then start up your database and restore to the point defined in `CLONE_TARGET_TIME`.
+
+If successful you will see something like this in your logs:
+(docs/images/success.png)
+
+Patroni will begin bootstrapping your backup. You will see a lot "Not Healthy..bootstrap in progress..rejecting connections" in your logs for a while as shown below. **This is normal, do not stop the process**.
+(docs/images/bootstrapping.png)
+This will repeat for a few moments. Once the bootstrap is finished you'll see a bunch of SQL statements followed eventually by your pod declaring it is `the leader with the lock`. At this point you're all done!
+
+
+##### Command-Line Walkthrough
+
+**Esure you are in the correct namespace!**
+- `oc project` will show you what namespace you are in
+
+1. `oc scale statefulset <statefulset-name> --replicas=0`
+  - This will scale your statefulset to 0
+  - The statefulset name is probably the same as your patroni cluster
+  - To get a list of all statefulsets use `oc get statefulsets`
+
+2. `oc delete configmap <configmap-name>`
+  - You'll need to do this for each configmap prefixed by the name of your patroni cluster
+  - example: \<patroni-cluster\>-leader, \<patroni-cluster\>-config, \<patroni-cluster\>-failover
+  - To get a list of all configmaps use `oc get configmaps`
+
+3. `oc delete pvc <pvc-name>`
+  - Again, you'll need to do this for each PVC that contains the name of your patroni cluster
+  - example: storage-volume-\<patroni-cluster\>-0, storage-volume-\<patroni\>-1
+  - To get a list of all PVCs use `oc get pvc`
+
+4. `oc set env statefulset/<statefulset-name> CLONE_SCOPE=<patroni-cluster-name> CLONE_METHOD=CLONE_WITH_WALE CLONE_WALG_GS_PREFIX=<google-cloud-prefix> CLONE_GOOGLE_APPLICATION_CREDENTIALS=<path-to-credentials> CLONE_TARGET_TIME='<target-restore-time-with-timezone>' PGVERSION=<major-postgres-version-to-restore-with>`
+  - To get a list of all environment variables in your statefulset use `oc set env statefulset/<statefulset-name> --list`
+  - Examples of values between`< >` are above in the **steps** section
+
+5. `oc scale statefulset <statefulset-name> --replicas=<n>` with 'n' being desired number of pods.
+
+##### Openshift UI Walkthrough
+
+1. Scale your statefulset to 0
+  - Under `Workloads` in the left pane, go to `StatefulSets`
+  (docs/images/ss.png)
+  - Use the arrows to scale your pods down to 0
+  (docs/images/scaled-down.png)
+
+2. Delete configmaps
+  - Under `Workloads` in the left pane, go to `ConfigMaps`
+  (docs/images/config.png)
+  - Delete all configmaps in the list that are prefixed by your patroni cluster name
+    - example: \<patroni-cluster\>-leader, \<patroni-cluster\>-config, \<patroni-cluster\>-failover
+
+3. Delete PVCs
+  - Under `Storage` in the left pane, go to `PersistentVolumeClaims`
+  (docs/images/pvc.png)
+  - Delete all PVCs in the list that contain your patroni cluster name
+    - example: storage-volume-\<patroni-cluster\>-0, storage-volume-\<patroni\>-1
+
+4. Set environment variables
+  - Under `Workloads` in the left pane, go back to `StatefulSets`
+  (docs/images/ss.png)
+  - Select your statefulset & go to the `Environment` tab
+  - Add the environment variables described in the `Steps` section above
+  - **Save your environment variables with the save button at the bottom of the page**
+
+5. Scale up your statefulset
+  - Go to the `Details` tab & use the arrows to scale up your statefulset
