@@ -12,7 +12,8 @@ executors:
 
 jobs:
   test-local-cluster:
-    executor: redhat-openshift/machine-for-local-cluster
+    machine:
+      image: ubuntu-2004:202107-02
     steps:
       - checkout
       - run:
