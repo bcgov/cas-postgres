@@ -44,6 +44,12 @@ jobs:
           server-address: "https://127.0.0.1:8443"
           username: dev1
       - run:
+          name: Print kubectl version
+          command: kubectl version
+      - run:
+          name: Print oc CLI version
+          command: oc version
+      - run:
           command: make provision
           name: Provision the cluster project set
       - run:
