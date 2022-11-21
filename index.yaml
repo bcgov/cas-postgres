@@ -3,6 +3,20 @@ entries:
   cas-postgres:
   - apiVersion: v2
     appVersion: 0.3.0
+    created: "2022-11-21T22:36:25.554933417Z"
+    dependencies:
+    - name: patroni
+      repository: file://../patroni
+      version: 0.21.4
+    description: Postgres database for the CAS team
+    digest: 2a36221dc0c3f2ae914372516c515858f496fa75e4b5d73f7bc4048f51fd9070
+    name: cas-postgres
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/cas-postgres-0.8.4/cas-postgres-0.8.4.tgz
+    version: 0.8.4
+  - apiVersion: v2
+    appVersion: 0.3.0
     created: "2021-10-13T23:30:20.404451148Z"
     dependencies:
     - name: patroni
@@ -213,6 +227,37 @@ entries:
   patroni:
   - apiVersion: v1
     appVersion: 1.6-p3
+    created: "2022-11-21T22:36:25.793345976Z"
+    dependencies:
+    - condition: etcd.deployChart
+      name: etcd
+      repository: https://charts.helm.sh/incubator
+      version: 0.6.2
+    - condition: zookeeper.deployChart
+      name: zookeeper
+      repository: https://charts.helm.sh/incubator
+      version: 1.0.0
+    - condition: consul.deployChart
+      name: consul
+      repository: https://charts.helm.sh/stable
+      version: 3.6.1
+    description: 'Highly available elephant herd: HA PostgreSQL cluster.'
+    digest: 8d4096149248da258067b0ae12c11a1c4bd73447b71b0235f37d8d561f78e176
+    home: https://github.com/zalando/patroni
+    maintainers:
+    - email: dylan@button.is
+      name: Dylan Leard
+    - email: pierre.bastianelli@gov.bc.ca
+      name: Pierre Bastianelli
+    name: patroni
+    sources:
+    - https://github.com/zalando/patroni
+    - https://github.com/zalando/spilo
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/patroni-0.21.4/patroni-0.21.4.tgz
+    version: 0.21.4
+  - apiVersion: v1
+    appVersion: 1.6-p3
     created: "2021-07-09T22:10:07.106853216Z"
     dependencies:
     - condition: etcd.deployChart
@@ -269,4 +314,4 @@ entries:
     urls:
     - https://github.com/bcgov/cas-postgres/releases/download/patroni-0.21.2/patroni-0.21.2.tgz
     version: 0.21.2
-generated: "2021-10-13T23:30:20.404608548Z"
+generated: "2022-11-21T22:36:25.793699604Z"
