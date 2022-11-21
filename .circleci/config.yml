@@ -11,62 +11,6 @@ executors:
       - image: "circleci/ruby:2.6.4"
 
 jobs:
-  test-local-cluster:
-    machine:
-      image: ubuntu-2004:202107-02
-    steps:
-      - checkout
-      - run:
-          name: "Pull Submodules"
-          command: |
-            git submodule update --init
-      - run:
-          name: install helm
-          command: |
-            curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
-            chmod 700 get_helm.sh
-            ./get_helm.sh
-      - run:
-          name: Add Docker registry to /etc/hosts
-          command: echo "172.30.1.1 docker-registry.default.svc" | sudo tee -a /etc/hosts
-      - redhat-openshift/create-local-cluster-with-oc:
-          skip-registry-check: true
-      - run:
-          name: Login as cluster admin
-          command: oc login -u system:admin
-      - run:
-          command: make mock_storageclass
-          name: Mock the storage classes
-      - redhat-openshift/login-and-update-kubeconfig:
-          insecure-skip-tls-verify: true
-          openshift-platform-version: 4.x
-          password: password
-          server-address: "https://127.0.0.1:8443"
-          username: dev1
-      - run:
-          name: Print kubectl version
-          command: kubectl version
-      - run:
-          name: Print oc CLI version
-          command: oc version
-      - run:
-          command: make provision
-          name: Provision the cluster project set
-      - run:
-          command: make configure
-          name: Configure the cluster
-      - run:
-          command: make test_e2e_setup
-          name: Setup for e2e test
-      - run:
-          command: |
-            helm dep up helm/cas-postgres
-            helm install cas-postgres helm/cas-postgres --set patroni.image.tag=${CIRCLE_SHA1} --atomic --timeout 900s --namespace wksv3k-dev
-          name: Deploy to dev
-      - run:
-          command: make test_e2e OC_PROJECT=wksv3k-dev
-          name: Run e2e tests on dev
-
   lint:
     executor: redhat-openshift/default
     steps:
@@ -167,7 +111,3 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - test-local-cluster:
-          context: cas-pipeline
-          requires:
-            - build_and_push_sha1
