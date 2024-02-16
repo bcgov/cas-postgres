@@ -15,7 +15,7 @@ BATS tests for the aforementioned scripts can be run using the corresponding `ma
 The [`helm/patroni`](helm/patroni) folder contains a fork of the patroni helm chart that was in the (now deprecated) helm charts incubator, and can be reused by other teams.
 The [`helm/cas-postgres`](helm/cas-postgres) folder contains helm values used by the CAS team.
 
-> __In order to use WALG backups, you will need to pass in storage bucket names that have already been provisioned__. You can do this utilizing the [`terraform-job`](https://github.com/bcgov/cas-pipeline) chart from `cas-pipeline`.
+> __In order to use WALG backups, you will need to pass in storage bucket names and service accounts that have already been provisioned__. You can do this utilizing the [`terraform-bucket-provision`](https://github.com/bcgov/cas-pipeline) chart from `cas-pipeline`.
 
 ### Installation
 
