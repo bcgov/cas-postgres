@@ -1,9 +1,3 @@
-casShelf:
-  image:
-    repository: gcr.io/ggl-cas-storage/cas-shelf-tfe-add-app
-    pullPolicy: Always
-    tag: "0.1"
-
 patroni:
   image:
     repository: gcr.io/ggl-cas-storage/cas-postgres
@@ -32,8 +26,3 @@ patroni:
     gcsBucket:
     # kubernetesSecret should be gcp-{{ namespace }}-{{ gcs.bucketSuffix }}-service-account-key
     kubernetesSecret:
-
-# options below are required if walE.enable is true
-namespace:
-gcs:
-  bucketSuffix:

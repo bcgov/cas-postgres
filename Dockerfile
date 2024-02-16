@@ -1,6 +1,16 @@
 FROM registry.opensource.zalan.do/acid/spilo-14:2.1-p2
 LABEL maintainer="GGIRCS Team <ggircs@gov.bc.ca>"
 
+# For this version of the patroni image, the postgres packages have been archived
+# and the apt sources need to point at the archived repo
+# https://www.postgresql.org/message-id/ZN4OigxPJA236qlg%40msg.df7cb.de
+RUN <<EOF
+cat > /etc/apt/sources.list.d/pgdg.list << EOL
+deb https://apt-archive.postgresql.org/pub/repos/apt bionic-pgdg main
+deb-src https://apt-archive.postgresql.org/pub/repos/apt bionic-pgdg main
+EOL
+EOF
+
 COPY root /
 
 # TODO: pg needs to be running to check TAP install
