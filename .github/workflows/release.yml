@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - feat/postgres-operator-chart
 
 jobs:
   release:
