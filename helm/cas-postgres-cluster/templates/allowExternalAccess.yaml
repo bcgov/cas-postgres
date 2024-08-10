@@ -1,0 +1,21 @@
+{{- if index .Values "external-access" "enable" }}
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: {{ .Release.name }}-cas-postgres-external-access
+  labels: {{ include "cas-postgres-cluster.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      postgres-operator.crunchydata.com/role: replica
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Values.externalAccess.instanceName }}
+          namespaceSelector:
+            matchLabels:
+              environment: {{ .Values.externalAccess.environment }}
+              name: {{ .Values.externalAccess.prefix }}
+{{- end }}
