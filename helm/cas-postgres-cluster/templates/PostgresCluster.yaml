@@ -1,0 +1,161 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: {{ include "cas-postgres-cluster.fullname" . }}
+  labels: {{ include "cas-postgres-cluster.labels" . | nindent 4 }}
+spec:
+  # this block is useful only if you also have monitoring set up for your cluster.
+  # this example installation is intended to be as small as possible, so it has been removed.
+  # however, this block remains as an example if you would like to add monitoring to your cluster.
+  #
+  # monitoring:
+  #   pgmonitor:
+  #     # this stuff is for the "exporter" container in the "obps-postgres-pgha1" set of pods
+  #     exporter:
+  #       resources:
+  #         requests:
+  #           cpu: 50m
+  #           memory: 32Mi
+  #         limits:
+  #           cpu: 100m
+  #           memory: 64Mi
+{{- if and (index .Values "postgresCluster" "postgres" "image") (index .Values "postgresCluster" "postgres" "tag") }}
+  image: {{ .Values.postgresCluster.postgres.image }}:{{ .Values.postgresCluster.postgres.tag }}
+{{- end }}
+  metadata:
+    labels: {{ include "cas-postgres-cluster.labels" . | nindent 6 }}
+  postgresVersion: {{ .Values.postgresCluster.postgresVersion }}
+  instances:
+    - name: pgha1
+      replicas: {{ .Values.postgresCluster.postgres.replicaCount }}
+      # this is how you create a PDB - don't make a separate one yourself!
+      minAvailable: 1
+      # these resources are for the "database" container in the "<release-name>-pgha1" set of pods
+      resources: {{ toYaml .Values.postgresCluster.resources | nindent 8 }}
+      sidecars:
+        # this stuff is for the "replication-cert-copy" container in the "<release-name>-pgha1" set of pods
+        replicaCertCopy:
+          resources:
+            requests:
+              cpu: 50m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 32Mi
+      dataVolumeClaimSpec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: {{ .Values.postgresCluster.storageSize }}
+        storageClassName: netapp-block-standard
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  postgres-operator.crunchydata.com/cluster: {{ template "cas-postgres-cluster.fullname" . }}
+                  postgres-operator.crunchydata.com/instance-set: pgha1
+  users: {{ toYaml .Values.postgresCluster.users | nindent 4 }}
+  backups:
+    pgbackrest:
+{{- if and (index .Values "postgresCluster" "pgbackrest" "image") (index .Values "postgresCluster" "pgbackrest" "tag") }}
+      image: {{ .Values.postgresCluster.pgbackrest.image }}:{{ .Values.postgresCluster.pgbackrest.tag }}
+{{- end }}
+      global:
+        repo1-retention-full: "90"
+        repo1-retention-full-type: time
+{{- if index .Values "gcsBackups" "enable" }}
+      configuration:
+        - configMap:
+            name: {{ template "cas-postgres-cluster.fullname" . }}-pgbackrest
+        - secret:
+            name: gcp-{{ .Release.Namespace }}-{{ .Values.gcsBucket }}-service-account-key
+            items:
+              - key: credentials.json
+                path: gcs-key.json
+{{- end }}
+      repos:
+        - name: repo1
+{{- if index .Values "gcsBackups" "enable" }}
+          gcs:
+            bucket: {{ .Release.Namespace }}-{{ .Values.gcsBackups.bucketName }}
+{{- else }}
+          # We backup to a local PVC
+          volume:
+            volumeClaimSpec:
+              storageClassName: netapp-block-standard
+              accessModes:
+              - "ReadWriteOnce"
+              resources:
+                requests:
+                  storage: {{ .Values.postgresCluster.storageSize }}
+{{- end }}
+          schedules:
+            full: "0 8 * * *"
+            # run incremental backup every 4 hours, except at 8am UTC (when the full backup is running)
+            incremental: "0 0,4,12,16,20 * * *"
+      # this stuff is for the "pgbackrest" container (the only non-init container) in the "obps-postgres-repo-host" pod
+      repoHost:
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+      sidecars:
+        # this stuff is for the "pgbackrest" container in the "obps-postgres-pgha1" set of pods
+        pgbackrest:
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+      # allows the triggering of manual backups
+      manual:
+        repoName: repo1
+        options:
+         - --type=full
+  patroni:
+    dynamicConfiguration:
+      postgresql:
+        # these will probably allow your database to start up, but you'll definitely want to tune them up a bit for anything but the most minimal DBs.
+        parameters:
+          shared_buffers: '128MB' # default is 128MB; a good tuned default for shared_buffers is 25% of the memory allocated to the pod
+          wal_buffers: '-1' # automatically set as 1/32 of shared_buffers or 64kB, whichever is larger
+          min_wal_size: '32MB'
+          max_wal_size: '500MB' # default is 1GB
+  proxy:
+    pgBouncer:
+{{- if and (index .Values "postgresCluster" "pgbouncer" "image") (index .Values "postgresCluster" "pgbouncer" "tag") }}
+      image: {{ .Values.postgresCluster.pgbouncer.image }}:{{ .Values.postgresCluster.pgbouncer.tag }}
+{{- end }}
+      config:
+        global:
+          client_tls_sslmode: disable
+      replicas: {{ .Values.postgresCluster.pgbouncer.replicaCount }}
+      # these resources are for the "pgbouncer" container in the "obps-postgres-pgbouncer" set of pods
+      # there is a sidecar in these pods which are not mentioned here, but the requests/limits are teeny weeny by default so no worries there.
+      resources:
+        requests:
+          cpu: 50m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  postgres-operator.crunchydata.com/cluster: {{ template "cas-postgres-cluster.fullname" . }}
+                  postgres-operator.crunchydata.com/role: pgbouncer

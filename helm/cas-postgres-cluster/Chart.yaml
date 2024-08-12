@@ -1,0 +1,21 @@
+apiVersion: v2
+name: cas-postgres-cluster
+description: |-
+  A Helm chart to deploy a lightweight version of the crunchy PostgresCluster, meant to run in 
+  a small/medium openshift instance of the BC Government.
+  It also configures backups through pgbackrest and a google cloud storage account.
+
+type: application
+
+version: 1.0.0
+
+# Postgres Operator version for which this chart has been built.
+# It will very likely work for later versions, in which case the list of compatible images will change.
+# For the full list of compatible postgres/pgbouncer/pgbackrest versions, see https://access.crunchydata.com/documentation/postgres-operator/latest/references/components
+appVersion: "5.3.1"
+
+dependencies:
+  - name: terraform-bucket-provision
+    version: "0.1.4"
+    repository: https://bcgov.github.io/cas-pipeline/
+    condition: gcsBackups.enable
