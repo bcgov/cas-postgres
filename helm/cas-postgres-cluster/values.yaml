@@ -16,12 +16,12 @@ postgresCluster:
     image: artifacts.developer.gov.bc.ca/bcgov-docker-local/crunchy-postgres
     tag: ubi8-15.7-0
     replicaCount: 1
-  pgbackrest:
-    image: artifacts.developer.gov.bc.ca/bcgov-docker-local/crunchy-pgbackrest
-    tag: ubi8-2.41-4
+  # pgbackrest:
+  #   image: artifacts.developer.gov.bc.ca/bcgov-docker-local/crunchy-pgbackrest
+  #   tag: ubi8-2.41-4
   pgbouncer:
-    image: artifacts.developer.gov.bc.ca/bcgov-docker-local/crunchy-pgbouncer
-    tag: ubi8-1.18-0
+    # image: artifacts.developer.gov.bc.ca/bcgov-docker-local/crunchy-pgbouncer
+    # tag: ubi8-1.18-0
     replicaCount: 2
 
   # The "users" value(s) is passed to the crunchy postgres operator to create the database.

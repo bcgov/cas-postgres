@@ -19,7 +19,9 @@ spec:
   #         limits:
   #           cpu: 100m
   #           memory: 64Mi
+{{- if and (index .Values "postgresCluster" "postgres" "image") (index .Values "postgresCluster" "postgres" "tag") }}
   image: {{ .Values.postgresCluster.postgres.image }}:{{ .Values.postgresCluster.postgres.tag }}
+{{- end }}
   metadata:
     labels: {{ include "cas-postgres-cluster.labels" . | nindent 6 }}
   postgresVersion: {{ .Values.postgresCluster.postgresVersion }}
@@ -60,7 +62,9 @@ spec:
   users: {{ toYaml .Values.postgresCluster.users | nindent 4 }}
   backups:
     pgbackrest:
+{{- if and (index .Values "postgresCluster" "pgbackrest" "image") (index .Values "postgresCluster" "pgbackrest" "tag") }}
       image: {{ .Values.postgresCluster.pgbackrest.image }}:{{ .Values.postgresCluster.pgbackrest.tag }}
+{{- end }}
       global:
         repo1-retention-full: "90"
         repo1-retention-full-type: time
@@ -129,7 +133,9 @@ spec:
           max_wal_size: '500MB' # default is 1GB
   proxy:
     pgBouncer:
+{{- if and (index .Values "postgresCluster" "pgbouncer" "image") (index .Values "postgresCluster" "pgbouncer" "tag") }}
       image: {{ .Values.postgresCluster.pgbouncer.image }}:{{ .Values.postgresCluster.pgbouncer.tag }}
+{{- end }}
       config:
         global:
           client_tls_sslmode: disable
