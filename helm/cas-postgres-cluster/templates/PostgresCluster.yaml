@@ -62,8 +62,10 @@ spec:
   users: {{ toYaml .Values.postgresCluster.users | nindent 4 }}
   backups:
     pgbackrest:
+{{- if .Values.postgresCluster.pgbackrest }}
 {{- if and (index .Values "postgresCluster" "pgbackrest" "image") (index .Values "postgresCluster" "pgbackrest" "tag") }}
       image: {{ .Values.postgresCluster.pgbackrest.image }}:{{ .Values.postgresCluster.pgbackrest.tag }}
+{{- end }}
 {{- end }}
       global:
         repo1-retention-full: "90"

@@ -7,7 +7,7 @@ description: |-
 
 type: application
 
-version: 1.0.0
+version: 1.0.1
 
 # Postgres Operator version for which this chart has been built.
 # It will very likely work for later versions, in which case the list of compatible images will change.
