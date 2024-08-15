@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "patroni-migration.fullname" . }}-scale-down-deployment
+  labels:
+{{ include "patroni-migration.labels" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": "pre-install,pre-upgrade"
+    "helm.sh/hook-weight": "-50"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 0
+  template:
+    metadata:
+      name: {{ template "patroni-migration.fullname" . }}-scale-down-deployment
+      labels: {{ include "patroni-migration.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-database-migration
+      containers:
+        - name: {{ template "patroni-migration.fullname" . }}-scale-down-deployment
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          image: bitnami/kubectl:1.26.13
+          command:
+            - "bin/bash"
+            - "-c"
+            - "kubectl scale --replicas=0 deployment/{{ .Values.deployment.name }}"
+      restartPolicy: Never

@@ -1,0 +1,156 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "patroni-migration.fullname" . }}-migrate-database
+  labels:
+{{ include "patroni-migration.labels" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": "pre-install,pre-upgrade"
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 0
+  # It might take up to 10 minutes for the Postgres Operator to be online
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      name: {{ template "patroni-migration.fullname" . }}-migrate-database
+      labels: {{ include "patroni-migration.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-database-migration
+      restartPolicy: Never
+      containers:
+        - name: {{ template "patroni-migration.fullname" . }}-migrate-database
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          image: {{ .Values.migrationJob.image }}:{{ .Values.migrationJob.tag }}
+          env:
+            - name: SOURCE_PGHOST
+              {{- if .Values.from.host }}
+              value: {{ .Values.from.host | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.from.hostSecretKey }}
+                  name: {{ .Values.from.secretName }}
+              {{- end }}
+            - name: SOURCE_PGPORT
+              {{- if .Values.from.port }}
+              value: {{ .Values.from.port | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.from.portSecretKey }}
+                  name: {{ .Values.from.secretName }}
+              {{- end }}
+            - name: SOURCE_PGUSER
+              {{- if .Values.from.user }}
+              value: {{ .Values.from.user | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.from.userSecretKey }}
+                  name: {{ .Values.from.secretName }}
+              {{- end }}
+            - name: SOURCE_PGPASSWORD
+              {{- if .Values.from.password }}
+              value: {{ .Values.from.password | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.from.passwordSecretKey }}
+                  name: {{ .Values.from.secretName }}
+              {{- end }}
+            - name: SOURCE_PGDATABASE
+              {{- if .Values.from.db }}
+              value: {{ .Values.from.db | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.from.dbSecretKey }}
+                  name: {{ .Values.from.secretName }}
+              {{- end }}
+            - name: TARGET_PGHOST
+              valueFrom:
+                secretKeyRef:
+                  key: host
+                  name: {{ .Values.to.secretName }}
+            - name: TARGET_PGPORT
+              valueFrom:
+                secretKeyRef:
+                  key: port
+                  name: {{ .Values.to.secretName }}
+            - name: TARGET_PGUSER
+              valueFrom:
+                secretKeyRef:
+                  key: user
+                  name: {{ .Values.to.secretName }}
+            - name: TARGET_PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: {{ .Values.to.secretName }}
+          command:
+            - "bin/bash"
+            - "-c"
+            - |
+              set -euo pipefail;
+
+              until PGHOST=$SOURCE_PGHOST PGPORT=$SOURCE_PGPORT PGUSER=$SOURCE_PGUSER PGPASSWORD=$SOURCE_PGPASSWORD pg_isready;
+              do
+                echo "Waiting for source database...";
+                sleep 10;
+              done;
+
+              until PGHOST=$TARGET_PGHOST PGPORT=$TARGET_PGPORT PGUSER=$TARGET_PGUSER PGPASSWORD=$TARGET_PGPASSWORD pg_isready;
+              do
+                echo "Waiting for target database...";
+                sleep 10;
+              done;
+
+
+              if PGHOST=$TARGET_PGHOST PGPORT=$TARGET_PGPORT PGUSER=$TARGET_PGUSER PGPASSWORD=$TARGET_PGPASSWORD psql -lqt | cut -d \| -f 1 | grep -qw $SOURCE_PGDATABASE; then
+                echo "Database $SOURCE_PGDATABASE already exists on target, aborting to prevent accidental overwrite";
+                exit 1;
+              fi;
+
+              # Migrating roles:
+              # `grep -v "ROLE $SOURCE_PGUSER"` is to prevent overwriting the new cluster role, we omit the CREATE ROLE and ALTER ROLE statements.
+              # i.e. if $SOURCE_PGUSER and $TARGET_PGUSER are the same, and the default postgres role
+
+              PGHOST=$TARGET_PGHOST \
+              PGPORT=$TARGET_PGPORT \
+              PGUSER=$TARGET_PGUSER \
+              PGPASSWORD=$TARGET_PGPASSWORD \
+              psql < <( \
+                  PGHOST=$SOURCE_PGHOST \
+                  PGPORT=$SOURCE_PGPORT \
+                  PGUSER=$SOURCE_PGUSER \
+                  PGPASSWORD=$SOURCE_PGPASSWORD \
+                  pg_dumpall -g | grep -v -E "ROLE $SOURCE_PGUSER|ROLE postgres"\
+              );
+
+              # Migrating data
+
+              PGHOST=$TARGET_PGHOST \
+              PGPORT=$TARGET_PGPORT \
+              PGUSER=$TARGET_PGUSER \
+              PGPASSWORD=$TARGET_PGPASSWORD \
+              psql < <( \
+                  PGHOST=$SOURCE_PGHOST \
+                  PGPORT=$SOURCE_PGPORT \
+                  PGUSER=$SOURCE_PGUSER \
+                  PGPASSWORD=$SOURCE_PGPASSWORD \
+                  pg_dump -C $SOURCE_PGDATABASE \
+              );
+
+              echo "Database $SOURCE_PGDATABASE migrated successfully!"
+
+              exit 0;
