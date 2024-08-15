@@ -59,12 +59,17 @@ This chart does, in order:
 
 It should be configured with the old patroni deployment as a source (`from: ...`), and the new PGO cluster as the target (`to: ...`).
 
+> [!NOTE]
+> Note: the `ignoreRoles` value should include all the roles that are declared in the new postgres cluster chart (user roles need to be setup by PGO to be properly registered by pgbouncer). Including these roles in the migration will overwrite the setup done by PGO and cause connection issues.
+
 #### Example values.yaml
 
 ```
 migrationJob:
   image: postgres
   tag: 15
+  ignoreRoles:
+    - metabase
 
 deployment:
   name: cas-metabase
