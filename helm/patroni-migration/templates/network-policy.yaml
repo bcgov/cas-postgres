@@ -1,0 +1,44 @@
+##########################
+# Source database access #
+##########################
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: {{ include "patroni-migration.fullname" . }}-source-db-access
+  labels: {{ include "patroni-migration.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": "pre-install,pre-upgrade"
+    "helm.sh/hook-weight": "-100"
+    "helm.sh/hook-delete-policy": "hook-succeeded,hook-failed,before-hook-creation"
+spec:
+  podSelector:
+    matchLabels:
+      # Old patroni deployments have a `release` label instead of the modern k8s/instance one
+      release: {{ .Values.deployment.sourceReleaseName }}
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ include "patroni-migration.name" . }}
+---
+##########################
+# Target database access #
+##########################
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: {{ include "patroni-migration.fullname" . }}-target-db-access
+  labels: {{ include "patroni-migration.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": "pre-install,pre-upgrade"
+    "helm.sh/hook-weight": "-100"
+    "helm.sh/hook-delete-policy": "hook-succeeded,hook-failed,before-hook-creation"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Values.deployment.targetReleaseName }}
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ include "patroni-migration.name" . }}

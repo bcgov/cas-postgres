@@ -1,0 +1,30 @@
+migrationJob:
+  image: postgres
+  tag: 15
+
+deployment:
+  name: cas-metabase
+  # for the KNP
+  sourceReleaseName: cas-metabase
+  targetReleaseName: cas-metabase-db
+  originalReplicaCount: 2
+
+from:
+  # Assuming all database information will be in the same secret
+  # Pass either the secret's key or the specific value
+  secretName: cas-metabase-patroni
+  hostSecretKey: ~
+  host: cas-metabase-patroni.9212c9-dev.svc.cluster.local
+  passwordSecretKey: password-superuser
+  password: ~
+  portSecretKey: ~
+  port: 5432
+  userSecretKey: ~
+  user: postgres
+
+  # The name of the database to migrate
+  db: metabase
+
+to:
+  # This is necessarily a PGO deployment
+  secretName: cas-metabase-db-cas-postgres-cluster-pguser-superuser
