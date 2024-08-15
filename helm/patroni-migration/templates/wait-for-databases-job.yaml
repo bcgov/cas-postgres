@@ -115,6 +115,11 @@ spec:
                 sleep 10;
               done;
 
+              if PGHOST=$TARGET_PGHOST PGPORT=$TARGET_PGPORT PGUSER=$TARGET_PGUSER PGPASSWORD=$TARGET_PGPASSWORD psql -lqt | cut -d \| -f 1 | grep -qw $SOURCE_PGDATABASE; then
+                echo "Database $SOURCE_PGDATABASE already exists on target, aborting to prevent accidental overwrite";
+                exit 1;
+              fi;
+
               echo "Databases at $SOURCE_PGHOST and $TARGET_PGHOST ready to start migration!"
 
               exit 0;

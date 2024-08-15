@@ -18,6 +18,10 @@ helm install --values path/to/values.yaml --repo https://bcgov.github.io/cas-pos
 > [!WARNING]
 > Your new database cluster shouldn't come configured with a database for the app. The migration process will take care of it and error out if a database exists, to avoid accidentally overwriting production data.
 
+> [!CAUTION]
+> When setting up the `cas-postgres-cluster` chart, make sure the `namespace` value is different from your existing patroni cluster.
+> Otherwise terraform will attempt to delete the existing backups and overwrite them with the new cluster ones!
+
 #### Example with a makefile:
 
 The original makefile was:
@@ -38,6 +42,10 @@ install: install_db install_app
 
 Although not required, it's recommended to make a first release here.
 There is now an empty postgres cluster next to your existing deployment.
+
+> [!CAUTION]
+> Extra caution: When setting up the `cas-postgres-cluster` chart, make sure the `namespace` value is different from your existing patroni cluster.
+> Otherwise terraform will attempt to delete the existing backups and overwrite them with the new cluster ones!
 
 # Step 2: Add the migration chart to the existing app deployment
 

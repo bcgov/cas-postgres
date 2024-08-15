@@ -75,7 +75,7 @@ spec:
         - configMap:
             name: {{ template "cas-postgres-cluster.fullname" . }}-pgbackrest
         - secret:
-            name: gcp-{{ .Release.Namespace }}-{{ .Values.gcsBucket }}-service-account-key
+            name: gcp-{{ .Release.Namespace }}-{{ .Values.gcsBackups.bucketName }}-service-account-key
             items:
               - key: credentials.json
                 path: gcs-key.json
