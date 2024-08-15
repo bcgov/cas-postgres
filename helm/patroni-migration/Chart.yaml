@@ -3,7 +3,7 @@ name: patroni-migration
 description: A Helm chart to orchestrate a migration from a legacy patroni cluster to a modern crunchy PGO cluster
 type: application
 
-version: 0.0.6
+version: 0.0.7
 
 # Not applicable
 appVersion: "1.0.0"
