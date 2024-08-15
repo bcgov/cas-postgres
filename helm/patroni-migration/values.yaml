@@ -1,6 +1,10 @@
 migrationJob:
   image: postgres
   tag: 15
+  # Add here the list of roles that SHOULD NOT be migrated.
+  # This
+  ignoreRoles:
+    - postgres
 
 deployment:
   # The name of the deployment that will be scaled down to 0

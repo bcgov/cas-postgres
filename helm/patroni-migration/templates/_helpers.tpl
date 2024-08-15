@@ -72,3 +72,12 @@ valueFrom:
     name: {{ .Values.from.secret }}
 {{- end }}
 {{- end }}
+
+
+
+{{- define "patroni-migration.ignoreRolesList" -}}
+items:
+    {{- range .Values.migrationJob.ignoreRoles }}
+    - "ROLE {{ . }}"
+    {{- end }}
+{{- end }}
