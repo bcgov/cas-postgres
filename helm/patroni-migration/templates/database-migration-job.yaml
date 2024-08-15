@@ -126,6 +126,9 @@ spec:
               # `grep -v "ROLE $SOURCE_PGUSER"` is to prevent overwriting the new cluster role, we omit the CREATE ROLE and ALTER ROLE statements.
               # i.e. if $SOURCE_PGUSER and $TARGET_PGUSER are the same, and the default postgres role
 
+              {{- $rolesExclusions := include "patroni-migration.ignoreRolesList" . | fromYaml }}
+
+
               PGHOST=$TARGET_PGHOST \
               PGPORT=$TARGET_PGPORT \
               PGUSER=$TARGET_PGUSER \
@@ -135,7 +138,7 @@ spec:
                   PGPORT=$SOURCE_PGPORT \
                   PGUSER=$SOURCE_PGUSER \
                   PGPASSWORD=$SOURCE_PGPASSWORD \
-                  pg_dumpall -g | grep -v -E "ROLE $SOURCE_PGUSER|ROLE postgres"\
+                  pg_dumpall -g | grep -v -E "{{- $rolesExclusions.items | join "|" -}}|ROLE postgres"\
               );
 
               # Migrating data
