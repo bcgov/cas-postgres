@@ -94,7 +94,7 @@ to:
 
 # Step 4: Create a deployment with steps #1, #2 and #3
 
-Create a release! The `patroni-migration` chart will run
+Create a release! The `patroni-migration` chart will run as a pre-upgrade hook and will wait for the databases to be available to connect before initiating the migration. This lets us minimize the time spent with the app unavailable.
 
 # Step 5: Cleanup
 

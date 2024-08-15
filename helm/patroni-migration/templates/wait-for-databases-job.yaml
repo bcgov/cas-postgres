@@ -1,12 +1,12 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ template "patroni-migration.fullname" . }}-migrate-database
+  name: {{ template "patroni-migration.fullname" . }}-wait-for-databases
   labels:
 {{ include "patroni-migration.labels" . | indent 4 }}
   annotations:
     "helm.sh/hook": "pre-install,pre-upgrade"
-    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-weight": "-60"
     "helm.sh/hook-delete-policy": "before-hook-creation"
 spec:
   parallelism: 1
@@ -16,13 +16,13 @@ spec:
   activeDeadlineSeconds: 600
   template:
     metadata:
-      name: {{ template "patroni-migration.fullname" . }}-migrate-database
+      name: {{ template "patroni-migration.fullname" . }}-wait-for-databases
       labels: {{ include "patroni-migration.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ .Release.Name }}-database-migration
       restartPolicy: Never
       containers:
-        - name: {{ template "patroni-migration.fullname" . }}-migrate-database
+        - name: {{ template "patroni-migration.fullname" . }}-wait-for-databases
           resources:
             limits:
               cpu: 100m
@@ -115,42 +115,6 @@ spec:
                 sleep 10;
               done;
 
-
-              if PGHOST=$TARGET_PGHOST PGPORT=$TARGET_PGPORT PGUSER=$TARGET_PGUSER PGPASSWORD=$TARGET_PGPASSWORD psql -lqt | cut -d \| -f 1 | grep -qw $SOURCE_PGDATABASE; then
-                echo "Database $SOURCE_PGDATABASE already exists on target, aborting to prevent accidental overwrite";
-                exit 1;
-              fi;
-
-              # Migrating roles:
-              # `grep -v "ROLE $SOURCE_PGUSER"` is to prevent overwriting the new cluster role, we omit the CREATE ROLE and ALTER ROLE statements.
-              # i.e. if $SOURCE_PGUSER and $TARGET_PGUSER are the same, and the default postgres role
-
-              PGHOST=$TARGET_PGHOST \
-              PGPORT=$TARGET_PGPORT \
-              PGUSER=$TARGET_PGUSER \
-              PGPASSWORD=$TARGET_PGPASSWORD \
-              psql < <( \
-                  PGHOST=$SOURCE_PGHOST \
-                  PGPORT=$SOURCE_PGPORT \
-                  PGUSER=$SOURCE_PGUSER \
-                  PGPASSWORD=$SOURCE_PGPASSWORD \
-                  pg_dumpall -g | grep -v -E "ROLE $SOURCE_PGUSER|ROLE postgres"\
-              );
-
-              # Migrating data
-
-              PGHOST=$TARGET_PGHOST \
-              PGPORT=$TARGET_PGPORT \
-              PGUSER=$TARGET_PGUSER \
-              PGPASSWORD=$TARGET_PGPASSWORD \
-              psql < <( \
-                  PGHOST=$SOURCE_PGHOST \
-                  PGPORT=$SOURCE_PGPORT \
-                  PGUSER=$SOURCE_PGUSER \
-                  PGPASSWORD=$SOURCE_PGPASSWORD \
-                  pg_dump -C $SOURCE_PGDATABASE \
-              );
-
-              echo "Database $SOURCE_PGDATABASE migrated successfully!"
+              echo "Databases at $SOURCE_PGHOST and $TARGET_PGHOST ready to start migration!"
 
               exit 0;
