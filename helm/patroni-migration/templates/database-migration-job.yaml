@@ -103,6 +103,8 @@ spec:
             - |
               set -euo pipefail;
 
+              # Reassessing database availability and condition
+
               until PGHOST=$SOURCE_PGHOST PGPORT=$SOURCE_PGPORT PGUSER=$SOURCE_PGUSER PGPASSWORD=$SOURCE_PGPASSWORD pg_isready;
               do
                 echo "Waiting for source database...(10s)";
@@ -114,7 +116,6 @@ spec:
                 echo "Waiting for target database...(10s)";
                 sleep 10;
               done;
-
 
               if PGHOST=$TARGET_PGHOST PGPORT=$TARGET_PGPORT PGUSER=$TARGET_PGUSER PGPASSWORD=$TARGET_PGPASSWORD psql -lqt | cut -d \| -f 1 | grep -qw $SOURCE_PGDATABASE; then
                 echo "Database $SOURCE_PGDATABASE already exists on target, aborting to prevent accidental overwrite";
