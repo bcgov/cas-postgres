@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - master
-      - chore/postgres-chart-knp
-
+      
 jobs:
   release:
     runs-on: ubuntu-latest
