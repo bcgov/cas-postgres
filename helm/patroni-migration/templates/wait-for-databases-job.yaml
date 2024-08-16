@@ -81,22 +81,22 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: pgbouncer-host
-                  name: {{ .Values.to.secretName }}
+                  name: {{ .Values.to.superuserSecretName }}
             - name: TARGET_PGPORT
               valueFrom:
                 secretKeyRef:
                   key: pgbouncer-port
-                  name: {{ .Values.to.secretName }}
+                  name: {{ .Values.to.superuserSecretName }}
             - name: TARGET_PGUSER
               valueFrom:
                 secretKeyRef:
                   key: user
-                  name: {{ .Values.to.secretName }}
+                  name: {{ .Values.to.superuserSecretName }}
             - name: TARGET_PGPASSWORD
               valueFrom:
                 secretKeyRef:
                   key: password
-                  name: {{ .Values.to.secretName }}
+                  name: {{ .Values.to.superuserSecretName }}
           command:
             - "bin/bash"
             - "-c"

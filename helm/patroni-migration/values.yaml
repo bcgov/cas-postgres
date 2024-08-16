@@ -33,5 +33,5 @@ to:
   # This is necessarily a PGO deployment
   # superuser to migrate roles
   superuserSecretName: ~ # cas-metabase-db-cas-postgres-cluster-pguser-postgres
-  # new owner of database to run the data migration
-  secretName: ~ # cas-metabase-db-cas-postgres-cluster-pguser-metabase
+  # new owner of database to run own the migrated database
+  appuserSecretName: ~ # cas-metabase-db-cas-postgres-cluster-pguser-metabase
