@@ -80,12 +80,12 @@ spec:
             - name: TARGET_PGHOST
               valueFrom:
                 secretKeyRef:
-                  key: host
+                  key: pgbouncer-host
                   name: {{ .Values.to.secretName }}
             - name: TARGET_PGPORT
               valueFrom:
                 secretKeyRef:
-                  key: port
+                  key: pgbouncer-port
                   name: {{ .Values.to.secretName }}
             - name: TARGET_PGUSER
               valueFrom:
@@ -115,7 +115,10 @@ spec:
                 sleep 10;
               done;
 
-              table_count=$(psql -t --csv -d $SOURCE_PGDATABASE -c "select count(*) from pg_catalog.pg_tables where schemaname not in ('pg_catalog','information_schema');");
+              table_count=$( \
+                PGHOST=$TARGET_PGHOST PGPORT=$TARGET_PGPORT PGUSER=$TARGET_PGUSER PGPASSWORD=$TARGET_PGPASSWORD \
+                psql -t --csv -d $SOURCE_PGDATABASE -c "select count(*) from pg_catalog.pg_tables where schemaname not in ('pg_catalog','information_schema');" \
+              );
 
               if [[ $table_count != "0" ]] then
                 echo "Database $SOURCE_PGDATABASE is not empty in the target cluster, aborting to prevent accidental overwrite";
