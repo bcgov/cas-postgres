@@ -103,13 +103,6 @@ spec:
             - |
               set -euo pipefail;
 
-              {{- $secretName := printf "%-%" (print (include "patroni-migration.fullname" .)) "migrated-secret" }}
-              {{- $secret := (lookup "v1" "Secret" .Release.Namespace $secretName ) }}
-              {{- if $secret }}
-              echo "Database migration already executed, aborting to avoid overwriting data";
-              exit 1;
-              {{- end -}}
-
               until PGHOST=$SOURCE_PGHOST PGPORT=$SOURCE_PGPORT PGUSER=$SOURCE_PGUSER PGPASSWORD=$SOURCE_PGPASSWORD pg_isready;
               do
                 echo "Waiting for source database...(10s)";
@@ -121,6 +114,13 @@ spec:
                 echo "Waiting for target database...(10s)";
                 sleep 10;
               done;
+
+              table_count=$(psql -t --csv -d $SOURCE_PGDATABASE -c "select count(*) from pg_catalog.pg_tables where schemaname not in ('pg_catalog','information_schema');");
+
+              if [[ $table_count != "0" ]] then
+                echo "Database $SOURCE_PGDATABASE is not empty in the target cluster, aborting to prevent accidental overwrite";
+                exit 1;
+              fi;
 
               echo "Databases at $SOURCE_PGHOST and $TARGET_PGHOST ready to start migration!"
 
