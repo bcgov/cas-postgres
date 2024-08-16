@@ -11,7 +11,7 @@ metadata:
 spec:
   parallelism: 1
   completions: 1
-  backoffLimit: 0
+  backoffLimit: 10
   # It might take up to 10 minutes for the Postgres Operator to be online
   activeDeadlineSeconds: 600
   template:
