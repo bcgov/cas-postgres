@@ -16,7 +16,9 @@ helm install --values path/to/values.yaml --repo https://bcgov.github.io/cas-pos
 ```
 
 > [!NOTE]
-> Make sure to setup the postgres cluster with the users your app needs (or to create them afterwards in your install process)
+> Make sure to setup the postgres cluster with the users your app needs (or to create them afterwards in your install process).
+> PgBouncer will not allow connections with a Superuser role.
+>
 > For example:
 >
 > ```

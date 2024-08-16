@@ -116,7 +116,7 @@ spec:
                 sleep 10;
               done;
 
-              until PGHOST=$TARGET_PGHOST PGPORT=$TARGET_PGPORT PGUSER=$TARGET_PGUSER PGPASSWORD=$TARGET_PGPASSWORD psql -c "\c";
+              until PGHOST=$TARGET_SUPERUSER_PGHOST PGPORT=$TARGET_SUPERUSER_PGPORT PGUSER=$TARGET_SUPERUSER_PGUSER PGPASSWORD=$TARGET_SUPERUSER_PGPASSWORD psql -c "\c";
               do
                 echo "Waiting for target database...(10s)";
                 sleep 10;
@@ -144,10 +144,10 @@ spec:
 
               # Migrating data
 
-              PGHOST=$TARGET_$SUPERUSER_PGHOST \
-              PGPORT=$TARGET_$SUPERUSER_PGPORT \
-              PGUSER=$TARGET_$SUPERUSER_PGUSER \
-              PGPASSWORD=$TARGET_$SUPERUSER_PGPASSWORD \
+              PGHOST=$TARGET_SUPERUSER_PGHOST \
+              PGPORT=$TARGET_SUPERUSER_PGPORT \
+              PGUSER=$TARGET_SUPERUSER_PGUSER \
+              PGPASSWORD=$TARGET_SUPERUSER_PGPASSWORD \
               psql < <( \
                   PGHOST=$SOURCE_PGHOST \
                   PGPORT=$SOURCE_PGPORT \

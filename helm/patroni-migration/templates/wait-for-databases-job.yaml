@@ -80,12 +80,12 @@ spec:
             - name: TARGET_PGHOST
               valueFrom:
                 secretKeyRef:
-                  key: pgbouncer-host
+                  key: host
                   name: {{ .Values.to.superuserSecretName }}
             - name: TARGET_PGPORT
               valueFrom:
                 secretKeyRef:
-                  key: pgbouncer-port
+                  key: port
                   name: {{ .Values.to.superuserSecretName }}
             - name: TARGET_PGUSER
               valueFrom:
