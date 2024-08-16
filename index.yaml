@@ -383,6 +383,17 @@ entries:
   patroni-migration:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2024-08-16T05:15:36.577584504Z"
+    description: A Helm chart to orchestrate a migration from a legacy patroni cluster
+      to a modern crunchy PGO cluster
+    digest: 0c803f8167978674635862053c1c81e71a15a15927d2e3a0e566fc9c7697e786
+    name: patroni-migration
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/patroni-migration-0.0.12/patroni-migration-0.0.12.tgz
+    version: 0.0.12
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2024-08-16T05:00:59.555817918Z"
     description: A Helm chart to orchestrate a migration from a legacy patroni cluster
       to a modern crunchy PGO cluster
@@ -502,4 +513,4 @@ entries:
     urls:
     - https://github.com/bcgov/cas-postgres/releases/download/patroni-migration-0.0.1/patroni-migration-0.0.1.tgz
     version: 0.0.1
-generated: "2024-08-16T05:00:59.555968348Z"
+generated: "2024-08-16T05:15:36.577845743Z"
