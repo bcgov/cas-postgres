@@ -148,7 +148,7 @@ spec:
                   PGPORT=$SOURCE_PGPORT \
                   PGUSER=$SOURCE_PGUSER \
                   PGPASSWORD=$SOURCE_PGPASSWORD \
-                  pg_dump -C $SOURCE_PGDATABASE \
+                  pg_dump $SOURCE_PGDATABASE \
               );
 
               echo "Database $SOURCE_PGDATABASE migrated successfully!"
