@@ -15,8 +15,17 @@ Then, install the chart:
 helm install --values path/to/values.yaml --repo https://bcgov.github.io/cas-postgres/ my-database-cluster cas-postgres/cas-postgres-cluster
 ```
 
-> [!WARNING]
-> Your new database cluster shouldn't come configured with a database for the app. The migration process will take care of it and error out if a database exists, to avoid accidentally overwriting production data.
+> [!NOTE]
+> Make sure to setup the postgres cluster with the users your app needs (or to create them afterwards in your install process)
+> For example:
+>
+> ```
+>   users:
+>    - name: postgres
+>    - name: appuser
+>      databases:
+>        - myapp
+> ```
 
 > [!CAUTION]
 > When setting up the `cas-postgres-cluster` chart, make sure the `namespace` value is different from your existing patroni cluster.
@@ -56,6 +65,7 @@ This chart does, in order:
 - Scale down the deployment passed into the values to 0 pods (to avoid having connections to the database)
 - Copies the roles and passwords from the source cluster to the target cluster, except for the source user listed in the chart, and `postgres` roles
 - Copies the database named in the values over to a new database in the target cluster.
+- Assigns the migrated database to the provided app user
 
 It should be configured with the old patroni deployment as a source (`from: ...`), and the new PGO cluster as the target (`to: ...`).
 
@@ -96,14 +106,15 @@ from:
 
 to:
   # This is necessarily a PGO deployment
-  secretName: cas-metabase-db-cas-postgres-cluster-pguser-superuser
+  superuserSecretName: cas-metabase-db-cas-postgres-cluster-pguser-superuser
+  appuserSecretName: cas-metabase-db-cas-postgres-cluster-pguser-metabase
 ```
 
 # Step 3: Update your app deployment to target the new database cluster
 
 1. Update the Deployment object, or all objects applicable, to use the connection strings or postgres environment variables from the newly created Postgres Operator.
 
-2. Make sure the app has access to the new Postgres Operator cluster. This may include adding new Kubernetes Network Policies.
+2. Make sure the app has access to the new Postgres Operator cluster. **This may include adding new Kubernetes Network Policies.**
 
 # Step 4: Create a deployment with steps #1, #2 and #3
 
@@ -112,4 +123,4 @@ Create a release! The `patroni-migration` chart will run as a pre-upgrade hook a
 # Step 5: Cleanup
 
 Create a new release removing the old patroni deployment, and removing the `patroni-migration` chart.
-Things **_Should_** just work!
+Things **_should_** just work!
