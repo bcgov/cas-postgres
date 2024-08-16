@@ -125,13 +125,13 @@ spec:
 
               # Reassessing database availability and condition
 
-              until PGHOST=$SOURCE_PGHOST PGPORT=$SOURCE_PGPORT PGUSER=$SOURCE_PGUSER PGPASSWORD=$SOURCE_PGPASSWORD pg_isready;
+              until PGHOST=$SOURCE_PGHOST PGPORT=$SOURCE_PGPORT PGUSER=$SOURCE_PGUSER PGPASSWORD=$SOURCE_PGPASSWORD psql -c "\c";
               do
                 echo "Waiting for source database...(10s)";
                 sleep 10;
               done;
 
-              until PGHOST=$TARGET_PGHOST PGPORT=$TARGET_PGPORT PGUSER=$TARGET_PGUSER PGPASSWORD=$TARGET_PGPASSWORD pg_isready;
+              until PGHOST=$TARGET_PGHOST PGPORT=$TARGET_PGPORT PGUSER=$TARGET_PGUSER PGPASSWORD=$TARGET_PGPASSWORD psql -c "\c";
               do
                 echo "Waiting for target database...(10s)";
                 sleep 10;
