@@ -101,22 +101,22 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: host
-                  name: {{ .Values.to.secretName }}
+                  name: {{ .Values.to.superuserSecretName }}
             - name: TARGET_SUPERUSER_PGPORT
               valueFrom:
                 secretKeyRef:
                   key: port
-                  name: {{ .Values.to.secretName }}
+                  name: {{ .Values.to.superuserSecretName }}
             - name: TARGET_SUPERUSER_PGUSER
               valueFrom:
                 secretKeyRef:
                   key: user
-                  name: {{ .Values.to.secretName }}
+                  name: {{ .Values.to.superuserSecretName }}
             - name: TARGET_SUPERUSER_PGPASSWORD
               valueFrom:
                 secretKeyRef:
                   key: password
-                  name: {{ .Values.to.secretName }}
+                  name: {{ .Values.to.superuserSecretName }}
           command:
             - "bin/bash"
             - "-c"
