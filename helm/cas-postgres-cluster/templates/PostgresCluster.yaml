@@ -62,8 +62,10 @@ spec:
   users: {{ toYaml .Values.postgresCluster.users | nindent 4 }}
   backups:
     pgbackrest:
+{{- if .Values.postgresCluster.pgbackrest }}
 {{- if and (index .Values "postgresCluster" "pgbackrest" "image") (index .Values "postgresCluster" "pgbackrest" "tag") }}
       image: {{ .Values.postgresCluster.pgbackrest.image }}:{{ .Values.postgresCluster.pgbackrest.tag }}
+{{- end }}
 {{- end }}
       global:
         repo1-retention-full: "90"
@@ -73,7 +75,7 @@ spec:
         - configMap:
             name: {{ template "cas-postgres-cluster.fullname" . }}-pgbackrest
         - secret:
-            name: gcp-{{ .Release.Namespace }}-{{ .Values.gcsBucket }}-service-account-key
+            name: gcp-{{ .Release.Namespace }}-{{ .Values.gcsBackups.bucketName }}-service-account-key
             items:
               - key: credentials.json
                 path: gcs-key.json

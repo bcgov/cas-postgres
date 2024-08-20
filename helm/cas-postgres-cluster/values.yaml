@@ -15,7 +15,7 @@ postgresCluster:
   postgres:
     image: artifacts.developer.gov.bc.ca/bcgov-docker-local/crunchy-postgres
     tag: ubi8-15.7-0
-    replicaCount: 1
+    replicaCount: 2
   # pgbackrest:
   #   image: artifacts.developer.gov.bc.ca/bcgov-docker-local/crunchy-pgbackrest
   #   tag: ubi8-2.41-4

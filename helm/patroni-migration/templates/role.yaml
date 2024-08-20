@@ -1,0 +1,28 @@
+apiVersion: authorization.openshift.io/v1
+kind: Role
+metadata:
+  labels:
+{{ include "patroni-migration.labels" . | indent 4 }}
+  annotations:
+    openshift.io/description: A user who can scale deployments up and down
+    openshift.io/reconcile-protect: "false"
+    "helm.sh/hook": "pre-install,pre-upgrade"
+    "helm.sh/hook-weight": "-200"
+    "helm.sh/hook-delete-policy": "hook-succeeded,hook-failed,before-hook-creation"
+  name: {{ .Release.Name }}-database-migration
+rules:
+  - apiGroups:
+      - extensions
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - get
+  - apiGroups:
+      - apps
+    resources:
+      - "deployments/scale"
+    verbs:
+      - get
+      - patch
+      - update

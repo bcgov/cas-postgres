@@ -1,0 +1,173 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "patroni-migration.fullname" . }}-migrate-database
+  labels:
+{{ include "patroni-migration.labels" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": "pre-install,pre-upgrade"
+    "helm.sh/hook-weight": "-100"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 0
+  # It might take up to 10 minutes for the Postgres Operator to be online
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      name: {{ template "patroni-migration.fullname" . }}-migrate-database
+      labels: {{ include "patroni-migration.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-database-migration
+      restartPolicy: Never
+      containers:
+        - name: {{ template "patroni-migration.fullname" . }}-migrate-database
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          image: {{ .Values.migrationJob.image }}:{{ .Values.migrationJob.tag }}
+          env:
+            - name: SOURCE_PGHOST
+              {{- if .Values.from.host }}
+              value: {{ .Values.from.host | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.from.hostSecretKey }}
+                  name: {{ .Values.from.secretName }}
+              {{- end }}
+            - name: SOURCE_PGPORT
+              {{- if .Values.from.port }}
+              value: {{ .Values.from.port | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.from.portSecretKey }}
+                  name: {{ .Values.from.secretName }}
+              {{- end }}
+            - name: SOURCE_PGUSER
+              {{- if .Values.from.user }}
+              value: {{ .Values.from.user | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.from.userSecretKey }}
+                  name: {{ .Values.from.secretName }}
+              {{- end }}
+            - name: SOURCE_PGPASSWORD
+              {{- if .Values.from.password }}
+              value: {{ .Values.from.password | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.from.passwordSecretKey }}
+                  name: {{ .Values.from.secretName }}
+              {{- end }}
+            - name: SOURCE_PGDATABASE
+              {{- if .Values.from.db }}
+              value: {{ .Values.from.db | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.from.dbSecretKey }}
+                  name: {{ .Values.from.secretName }}
+              {{- end }}
+            - name: TARGET_SUPERUSER_PGHOST
+              valueFrom:
+                secretKeyRef:
+                  key: host
+                  name: {{ .Values.to.superuserSecretName }}
+            - name: TARGET_SUPERUSER_PGPORT
+              valueFrom:
+                secretKeyRef:
+                  key: port
+                  name: {{ .Values.to.superuserSecretName }}
+            - name: TARGET_SUPERUSER_PGUSER
+              valueFrom:
+                secretKeyRef:
+                  key: user
+                  name: {{ .Values.to.superuserSecretName }}
+            - name: TARGET_SUPERUSER_PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: {{ .Values.to.superuserSecretName }}
+            - name: TARGET_APP_PGUSER
+              valueFrom:
+                secretKeyRef:
+                  key: user
+                  name: {{ .Values.to.appuserSecretName }}
+          command:
+            - "bin/bash"
+            - "-c"
+            - |
+              set -euo pipefail;
+
+              cd workspace
+
+              # Reassessing database availability and condition
+
+              until PGHOST=$SOURCE_PGHOST PGPORT=$SOURCE_PGPORT PGUSER=$SOURCE_PGUSER PGPASSWORD=$SOURCE_PGPASSWORD psql -c "\c";
+              do
+                echo "Waiting for source database...(10s)";
+                sleep 10;
+              done;
+
+              until PGHOST=$TARGET_SUPERUSER_PGHOST PGPORT=$TARGET_SUPERUSER_PGPORT PGUSER=$TARGET_SUPERUSER_PGUSER PGPASSWORD=$TARGET_SUPERUSER_PGPASSWORD psql -c "\c";
+              do
+                echo "Waiting for target database...(10s)";
+                sleep 10;
+              done;
+
+              table_count=$( \
+                PGHOST=$TARGET_SUPERUSER_PGHOST PGPORT=$TARGET_SUPERUSER_PGPORT PGUSER=$TARGET_SUPERUSER_PGUSER PGPASSWORD=$TARGET_SUPERUSER_PGPASSWORD \
+                psql -t --csv -d $SOURCE_PGDATABASE -c "select count(*) from pg_catalog.pg_tables where schemaname not in ('pg_catalog','information_schema');" \
+              );
+
+              if [[ $table_count != "0" ]] then
+                echo "Database $SOURCE_PGDATABASE is not empty in the target cluster, aborting to prevent accidental overwrite";
+                exit 1;
+              fi;
+
+              # pgpass file
+              echo "$SOURCE_PGHOST:$SOURCE_PGPORT:$SOURCE_PGDATABASE:$SOURCE_PGUSER:$SOURCE_PGPASSWORD" >> .pgpass
+              echo "$TARGET_SUPERUSER_PGHOST:$TARGET_SUPERUSER_PGPORT:postgres:$TARGET_SUPERUSER_PGUSER:$TARGET_SUPERUSER_PGPASSWORD" >> .pgpass
+              echo "$TARGET_SUPERUSER_PGHOST:$TARGET_SUPERUSER_PGPORT:$SOURCE_PGDATABASE:$TARGET_SUPERUSER_PGUSER:$TARGET_SUPERUSER_PGPASSWORD" >> .pgpass
+              
+              chmod 0600 .pgpass
+
+              export PGPASSFILE=".pgpass"
+
+              # Migrating roles:
+              # `grep -v "ROLE $SOURCE_PGUSER"` is to prevent overwriting the new cluster role, we omit the CREATE ROLE and ALTER ROLE statements.
+              # i.e. if $SOURCE_PGUSER and $TARGET_PGUSER are the same, and the default postgres role
+
+              {{- $rolesExclusions := include "patroni-migration.ignoreRolesList" . | fromYaml }}
+
+              pg_dumpall -g -U $SOURCE_PGUSER -h $SOURCE_PGHOST -p $SOURCE_PGPORT -l $SOURCE_PGDATABASE | \
+              grep -v -E "{{- $rolesExclusions.items | join "|" -}}|ROLE postgres" | \
+              psql --no-password -U $TARGET_SUPERUSER_PGUSER -h $TARGET_SUPERUSER_PGHOST -p $TARGET_SUPERUSER_PGPORT -d postgres
+
+              # Migrating data
+              pg_dump --no-password -U $SOURCE_PGUSER -h $SOURCE_PGHOST -p $SOURCE_PGPORT $SOURCE_PGDATABASE | \
+              psql --no-password -U $TARGET_SUPERUSER_PGUSER -h $TARGET_SUPERUSER_PGHOST -p $TARGET_SUPERUSER_PGPORT -d $SOURCE_PGDATABASE 
+              
+              # The migrated database is owned by the superuser
+              # We change that to the app user
+              psql --no-password -U $TARGET_SUPERUSER_PGUSER -h $TARGET_SUPERUSER_PGHOST -p $TARGET_SUPERUSER_PGPORT -d $SOURCE_PGDATABASE \
+              -c "ALTER DATABASE $SOURCE_PGDATABASE OWNER TO $TARGET_APP_PGUSER;"
+
+              echo "Database $SOURCE_PGDATABASE migrated successfully!"
+
+          volumeMounts:
+            - mountPath: /workspace
+              name: migration-workspace
+      volumes:
+        - name: migration-workspace
+          emptyDir:
+            sizeLimit: 50Mi

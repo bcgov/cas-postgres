@@ -1,0 +1,37 @@
+migrationJob:
+  image: postgres
+  tag: 15
+  # Add here the list of roles that SHOULD NOT be migrated.
+  # This
+  ignoreRoles:
+    - postgres
+
+deployment:
+  # The name of the deployment that will be scaled down to 0
+  name: ~ # example: cas-metabase
+  # for the KNP
+  sourceReleaseName: ~ # example: cas-metabase
+  targetReleaseName: ~ # example: cas-metabase-db
+
+from:
+  # Assuming all database information will be in the same secret
+  # Pass either the secret's key or the specific value
+  secretName: ~ # cas-metabase-patroni
+  hostSecretKey: ~
+  host: ~ # cas-metabase-patroni.9212c9-dev.svc.cluster.local
+  passwordSecretKey: ~ # password-superuser
+  password: ~
+  portSecretKey: ~
+  port: ~ # 5432
+  userSecretKey: ~
+  user: ~ # postgres
+
+  # The name of the database to migrate
+  db: ~ # metabase
+
+to:
+  # This is necessarily a PGO deployment
+  # superuser to migrate roles
+  superuserSecretName: ~ # cas-metabase-db-cas-postgres-cluster-pguser-postgres
+  # new owner of database to run own the migrated database
+  appuserSecretName: ~ # cas-metabase-db-cas-postgres-cluster-pguser-metabase
