@@ -241,6 +241,23 @@ entries:
   cas-postgres-cluster:
   - apiVersion: v2
     appVersion: 5.3.1
+    created: "2024-08-20T23:48:18.97577521Z"
+    dependencies:
+    - condition: gcsBackups.enable
+      name: terraform-bucket-provision
+      repository: https://bcgov.github.io/cas-pipeline/
+      version: 0.1.4
+    description: A Helm chart to deploy a lightweight version of the crunchy PostgresCluster,
+      meant to run in  a small/medium openshift instance of the BC Government. It
+      also configures backups through pgbackrest and a google cloud storage account.
+    digest: 9e4dddf3ac4c38234fbca883a6905805b9b0d7876226126c96d8387229f65654
+    name: cas-postgres-cluster
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/cas-postgres-cluster-1.1.1/cas-postgres-cluster-1.1.1.tgz
+    version: 1.1.1
+  - apiVersion: v2
+    appVersion: 5.3.1
     created: "2024-08-20T21:18:28.508913166Z"
     dependencies:
     - condition: gcsBackups.enable
@@ -415,6 +432,17 @@ entries:
     - https://github.com/bcgov/cas-postgres/releases/download/patroni-0.21.2/patroni-0.21.2.tgz
     version: 0.21.2
   patroni-migration:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2024-08-20T23:48:19.147024226Z"
+    description: A Helm chart to orchestrate a migration from a legacy patroni cluster
+      to a modern crunchy PGO cluster
+    digest: bd4183cca397744a043dcabc82d1997a07d754ae0a1bf2e4288e597ed5ea93fd
+    name: patroni-migration
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/patroni-migration-1.0.1/patroni-migration-1.0.1.tgz
+    version: 1.0.1
   - apiVersion: v2
     appVersion: 1.0.0
     created: "2024-08-20T21:37:36.963110774Z"
@@ -646,4 +674,4 @@ entries:
     urls:
     - https://github.com/bcgov/cas-postgres/releases/download/patroni-migration-0.0.1/patroni-migration-0.0.1.tgz
     version: 0.0.1
-generated: "2024-08-20T22:57:37.18597168Z"
+generated: "2024-08-20T23:48:19.147589112Z"
