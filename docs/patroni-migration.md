@@ -1,6 +1,6 @@
-# Migrating from
+# Migrating from a legacy patroni HA cluster to a new Crunchy Postgres Operator deployment
 
-# Step 1: Add a Cruncy PGO to your deployment
+# Step 1: Add a Crunchy PGO to your deployment
 
 This is done with the [cas-postgres-cluster](helm/cas-postgres-cluster/Chart.yaml) chart.
 
