@@ -103,13 +103,15 @@ spec:
             - |
               set -euo pipefail;
 
-              # pg_isready can succeed if pgbouncer is up but the database isn't
+              echo "Waiting for source db on $SOURCE_PGHOST with user $SOURCE_PGUSER"
 
               until PGHOST=$SOURCE_PGHOST PGPORT=$SOURCE_PGPORT PGUSER=$SOURCE_PGUSER PGPASSWORD=$SOURCE_PGPASSWORD psql -c "\c";
               do
                 echo "Waiting for source database...(10s)";
                 sleep 10;
               done;
+
+              echo "Waiting for target db on $TARGET_PGHOST with user $TARGET_PGUSER"
 
               until PGHOST=$TARGET_PGHOST PGPORT=$TARGET_PGPORT PGUSER=$TARGET_PGUSER PGPASSWORD=$TARGET_PGPASSWORD psql -c "\c";
               do
