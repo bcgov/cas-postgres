@@ -21,7 +21,6 @@ teardown() {
     shellmock_expect psql --type regex --match ".*" --output "called psql"
     run "$create_user" --user $user --db $db --password $password --enable-citus --owner
     echo "$output" # prints the lines if test fails
-    echo "$status"
     [ $status -eq 0 ]
     [ "${lines[0]}" == "called psql" ]
 }
