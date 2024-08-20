@@ -106,7 +106,7 @@ spec:
             - "bin/bash"
             - "-c"
             - |
-              set -euo pipefail;
+              set -euxo pipefail;
 
               cd workspace
 
@@ -131,6 +131,8 @@ spec:
               echo "$TARGET_SUPERUSER_PGHOST:$TARGET_SUPERUSER_PGPORT:$SOURCE_PGDATABASE:$TARGET_SUPERUSER_PGUSER:$TARGET_SUPERUSER_PGPASSWORD" >> .pgpass
               
               chmod 0600 .pgpass
+
+              cat .pgpass
 
               export PGPASSFILE=".pgpass"
 
