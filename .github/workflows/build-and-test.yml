@@ -17,4 +17,6 @@ jobs:
           submodules: recursive
       - name: Setup Bats
         uses: bats-core/bats-action@2.0.0
+        with:
+          bats-version: "1.1.0"
       - run: make test_unit
