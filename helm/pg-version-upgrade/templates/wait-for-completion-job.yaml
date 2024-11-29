@@ -29,6 +29,14 @@ spec:
             - "-c"
             - |
               set -euxo pipefail;
+
+              until [ "$(kubectl get postgrescluster pierre-cluster-cas-postgres-cluster -o json | jq .status.postgresVersion)" = "{{ .Values.pgUpgrade.toPostgresVersion }}" ]
+              do
+                echo 'Waiting for postgres cluster to report pg version {{ .Values.pgUpgrade.toPostgresVersion }}...(10s)';
+                sleep(10);
+              done;
+
+              echo "Cluster {{ .Values.pgUpgrade.postgresClusterName }} successfully reports version {{ .Values.pgUpgrade.toPostgresVersion }}!"
               
               exit 0;
       restartPolicy: Never
