@@ -1,7 +1,7 @@
 # Configuration for the PGUpgrade object
 # See https://access.crunchydata.com/documentation/postgres-operator/latest/guides/major-postgres-version-upgrade#step-2-configure-the-upgrade-parameters-through-a-pgupgrade-object
 pgUpgrade:
-  postgresClusterName: pierre-cluster-cas-postgres-cluster
+  postgresClusterName: pierre-pg-cas-postgres-cluster
   fromPostgresVersion: 14
   toPostgresVersion: 16
 

@@ -2,7 +2,7 @@
 environment: ~
 
 postgresCluster:
-  postgresVersion: 15
+  postgresVersion: 14
   storageSize: 1Gi
   resources:
     requests:
@@ -13,8 +13,8 @@ postgresCluster:
       memory: 256Mi
 
   postgres:
-    image: artifacts.developer.gov.bc.ca/bcgov-docker-local/crunchy-postgres
-    tag: ubi8-15.7-0
+    # image: artifacts.developer.gov.bc.ca/bcgov-docker-local/crunchy-postgres
+    # tag: ubi8-15.7-0
     replicaCount: 2
   # pgbackrest:
   #   image: artifacts.developer.gov.bc.ca/bcgov-docker-local/crunchy-pgbackrest

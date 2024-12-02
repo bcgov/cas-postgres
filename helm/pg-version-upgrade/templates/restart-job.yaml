@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "pg-version-upgrade.fullname" . }}-restart
+  labels:
+{{ include "pg-version-upgrade.labels" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 3
+  template:
+    metadata:
+      name: {{ template "pg-version-upgrade.fullname" . }}-restart
+      labels: {{ include "pg-version-upgrade.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-pg-version-upgrade
+      containers:
+        - name: {{ template "pg-version-upgrade.fullname" . }}-restart
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          image: bitnami/kubectl:{{ .Values.kubernetesVersion }}
+          command:
+            - "bin/bash"
+            - "-c"
+            - |
+              set -euxo pipefail
+
+              # IMPORTANT: The '-' at the end of this line tells kubectl to remove the annotation
+              kubectl annotate postgrescluster {{ .Values.pgUpgrade.postgresClusterName }} postgres-operator.crunchydata.com/allow-upgrade="pgupgrade"-
+
+              # Restart the cluster with the new version
+              kubectl patch postgrescluster {{ .Values.pgUpgrade.postgresClusterName }} --patch '{"spec": {"shutdown": false, "postgresVersion": {{ .Values.pgUpgrade.toPostgresVersion }} }}' --type=merge
+      restartPolicy: Never

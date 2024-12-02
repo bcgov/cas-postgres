@@ -1,7 +1,7 @@
 apiVersion: postgres-operator.crunchydata.com/v1beta1
 kind: PGUpgrade
 metadata:
-  name: {{ .Release.Name }}-pgupgrade
+  name: {{ .Release.Name }}
   labels:
 {{ include "pg-version-upgrade.labels" . | indent 4 }}
 spec:

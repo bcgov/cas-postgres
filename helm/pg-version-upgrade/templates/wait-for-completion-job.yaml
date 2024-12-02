@@ -4,6 +4,10 @@ metadata:
   name: {{ template "pg-version-upgrade.fullname" . }}-wait-for-completion
   labels:
 {{ include "pg-version-upgrade.labels" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation
 spec:
   parallelism: 1
   completions: 1
@@ -33,7 +37,7 @@ spec:
               until [ "$(kubectl get postgrescluster pierre-cluster-cas-postgres-cluster -o json | jq .status.postgresVersion)" = "{{ .Values.pgUpgrade.toPostgresVersion }}" ]
               do
                 echo 'Waiting for postgres cluster to report pg version {{ .Values.pgUpgrade.toPostgresVersion }}...(10s)';
-                sleep(10);
+                sleep 10;
               done;
 
               echo "Cluster {{ .Values.pgUpgrade.postgresClusterName }} successfully reports version {{ .Values.pgUpgrade.toPostgresVersion }}!"
