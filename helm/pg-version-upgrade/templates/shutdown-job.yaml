@@ -29,6 +29,6 @@ spec:
             - "-c"
             - |
               set -euxo pipefail
-              kubectl annotate postgrescluster {{ .Values.pgUpgrade.postgresClusterName }} postgres-operator.crunchydata.com/allow-upgrade="pgupgrade"
+              kubectl annotate postgrescluster {{ .Values.pgUpgrade.postgresClusterName }} postgres-operator.crunchydata.com/allow-upgrade="{{ .Release.Name }}"
               kubectl patch postgrescluster {{ .Values.pgUpgrade.postgresClusterName }} --patch '{"spec": {"shutdown": true}}' --type=merge
       restartPolicy: Never
