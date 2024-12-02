@@ -34,9 +34,7 @@ spec:
             - |
               set -euxo pipefail
 
-              # IMPORTANT: The '-' at the end of this line tells kubectl to remove the annotation
-              kubectl annotate postgrescluster {{ .Values.pgUpgrade.postgresClusterName }} postgres-operator.crunchydata.com/allow-upgrade="pgupgrade"-
-
-              # Restart the cluster with the new version
+              kubectl patch postgrescluster {{ .Values.pgUpgrade.postgresClusterName }} --type=json -p='[{"op":"remove", "path":"/metadata/annotations/postgres-operator.crunchydata.com~1allow-upgrade"}]'
               kubectl patch postgrescluster {{ .Values.pgUpgrade.postgresClusterName }} --patch '{"spec": {"shutdown": false, "postgresVersion": {{ .Values.pgUpgrade.toPostgresVersion }} }}' --type=merge
+              
       restartPolicy: Never

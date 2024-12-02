@@ -34,7 +34,7 @@ spec:
             - |
               set -euxo pipefail;
 
-              until [ "$(kubectl get postgrescluster pierre-cluster-cas-postgres-cluster -o json | jq .status.postgresVersion)" = "{{ .Values.pgUpgrade.toPostgresVersion }}" ]
+              until [ "$(kubectl get postgrescluster {{ .Values.pgUpgrade.postgresClusterName }} -o json | jq .status.postgresVersion)" = "{{ .Values.pgUpgrade.toPostgresVersion }}" ]
               do
                 echo 'Waiting for postgres cluster to report pg version {{ .Values.pgUpgrade.toPostgresVersion }}...(10s)';
                 sleep 10;
