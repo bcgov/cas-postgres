@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "pg-version-upgrade.fullname" . }}-wait-for-completion
+  labels:
+{{ include "pg-version-upgrade.labels" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 3
+  template:
+    metadata:
+      name: {{ template "pg-version-upgrade.fullname" . }}-wait-for-completion
+      labels: {{ include "pg-version-upgrade.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-pg-version-upgrade
+      containers:
+        - name: {{ template "pg-version-upgrade.fullname" . }}-wait-for-completion
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          image: bitnami/kubectl:{{ .Values.kubernetesVersion }}
+          command:
+            - "bin/bash"
+            - "-c"
+            - |
+              set -euxo pipefail;
+
+              until [ "$(kubectl get postgrescluster {{ .Values.pgUpgrade.postgresClusterName }} -o json | jq .status.postgresVersion)" = "{{ .Values.pgUpgrade.toPostgresVersion }}" ]
+              do
+                echo 'Waiting for postgres cluster to report pg version {{ .Values.pgUpgrade.toPostgresVersion }}...(10s)';
+                sleep 10;
+              done;
+
+              echo "Cluster {{ .Values.pgUpgrade.postgresClusterName }} successfully reports version {{ .Values.pgUpgrade.toPostgresVersion }}!"
+              
+              exit 0;
+      restartPolicy: Never

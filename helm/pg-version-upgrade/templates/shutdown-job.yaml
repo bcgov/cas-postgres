@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "pg-version-upgrade.fullname" . }}-shutdown
+  labels:
+{{ include "pg-version-upgrade.labels" . | indent 4 }}
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 3
+  template:
+    metadata:
+      name: {{ template "pg-version-upgrade.fullname" . }}-shutdown
+      labels: {{ include "pg-version-upgrade.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-pg-version-upgrade
+      containers:
+        - name: {{ template "pg-version-upgrade.fullname" . }}-shutdown
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          image: bitnami/kubectl:{{ .Values.kubernetesVersion }}
+          command:
+            - "bin/bash"
+            - "-c"
+            - |
+              set -euxo pipefail
+              kubectl annotate postgrescluster {{ .Values.pgUpgrade.postgresClusterName }} postgres-operator.crunchydata.com/allow-upgrade="{{ .Release.Name }}"
+              kubectl patch postgrescluster {{ .Values.pgUpgrade.postgresClusterName }} --patch '{"spec": {"shutdown": true}}' --type=merge
+      restartPolicy: Never
