@@ -1,6 +1,6 @@
 patroni:
   image:
-    repository: gcr.io/ggl-cas-storage/cas-postgres
+    repository: ghcr.io/bcgov/cas-postgres
     pullPolicy: Always
     tag: "0.3.0"
 
