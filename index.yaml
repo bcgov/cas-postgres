@@ -3,6 +3,20 @@ entries:
   cas-postgres:
   - apiVersion: v2
     appVersion: 0.3.0
+    created: "2025-03-06T20:02:05.343065451Z"
+    dependencies:
+    - name: patroni
+      repository: file://../patroni
+      version: 0.21.4
+    description: Postgres database for the CAS team
+    digest: ee4fb489b35e83f7b00817d74b0595117bdbfc5909ebcada84fbcfdc57c91077
+    name: cas-postgres
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/cas-postgres-0.10.1/cas-postgres-0.10.1.tgz
+    version: 0.10.1
+  - apiVersion: v2
+    appVersion: 0.3.0
     created: "2024-02-16T23:12:47.794366996Z"
     dependencies:
     - name: patroni
@@ -239,6 +253,23 @@ entries:
     - https://github.com/bcgov/cas-postgres/releases/download/cas-postgres-0.1.0/cas-postgres-0.1.0.tgz
     version: 0.1.0
   cas-postgres-cluster:
+  - apiVersion: v2
+    appVersion: 5.3.1
+    created: "2025-03-06T20:02:05.472221499Z"
+    dependencies:
+    - condition: gcsBackups.enable
+      name: terraform-bucket-provision
+      repository: https://bcgov.github.io/cas-pipeline/
+      version: 0.1.4
+    description: A Helm chart to deploy a lightweight version of the crunchy PostgresCluster,
+      meant to run in a small/medium openshift instance of the BC Government. It also
+      configures backups through pgbackrest and a google cloud storage account.
+    digest: 6fa9a645be7162f411bf927f3d8b9f82a69def802f44cd3275c037be2556767c
+    name: cas-postgres-cluster
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/cas-postgres-cluster-1.1.2/cas-postgres-cluster-1.1.2.tgz
+    version: 1.1.2
   - apiVersion: v2
     appVersion: 5.3.1
     created: "2024-08-20T23:48:18.97577521Z"
@@ -674,4 +705,16 @@ entries:
     urls:
     - https://github.com/bcgov/cas-postgres/releases/download/patroni-migration-0.0.1/patroni-migration-0.0.1.tgz
     version: 0.0.1
-generated: "2024-08-20T23:48:19.147589112Z"
+  pg-version-upgrade:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-03-06T20:02:05.591561809Z"
+    description: A Helm chart to orchestrate and automate the postgres version upgrade
+      of an existing postgres cluster.
+    digest: 7a940a1c1e0c0ff67ae644386e17a47cdaf16a92c9a178793c1ba4fba3113210
+    name: pg-version-upgrade
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/pg-version-upgrade-0.0.2/pg-version-upgrade-0.0.2.tgz
+    version: 0.0.2
+generated: "2025-03-06T20:02:05.591938381Z"
