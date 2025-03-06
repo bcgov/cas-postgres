@@ -2,7 +2,7 @@ apiVersion: v2
 name: pg-version-upgrade
 description: A Helm chart to orchestrate and automate the postgres version upgrade of an existing postgres cluster.
 type: application
-version: 0.0.1
+version: 0.0.2
 
 # Unused.
 # The version of the PGUpgrade object will depend on the PostgresOperator installed on the cluster.

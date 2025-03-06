@@ -2,7 +2,7 @@ apiVersion: v2
 name: cas-postgres
 description: Postgres database for the CAS team
 type: application
-version: 0.10.0
+version: 0.10.1
 appVersion: 0.3.0
 dependencies:
   - name: patroni
