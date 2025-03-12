@@ -2,7 +2,7 @@ patroni:
   image:
     repository: ghcr.io/bcgov/cas-postgres
     pullPolicy: Always
-    tag: "0.3.0"
+    tag: "latest"
 
   replicaCount: 2
 
