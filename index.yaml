@@ -3,6 +3,20 @@ entries:
   cas-postgres:
   - apiVersion: v2
     appVersion: 0.3.0
+    created: "2025-03-12T22:50:58.180797436Z"
+    dependencies:
+    - name: patroni
+      repository: file://../patroni
+      version: 0.21.4
+    description: Postgres database for the CAS team
+    digest: 8f5661d00ae3940e9d66f1a0bef23b3690e311e1b37166d573a2b455154591b3
+    name: cas-postgres
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/cas-postgres-0.10.2/cas-postgres-0.10.2.tgz
+    version: 0.10.2
+  - apiVersion: v2
+    appVersion: 0.3.0
     created: "2025-03-06T20:02:05.343065451Z"
     dependencies:
     - name: patroni
@@ -717,4 +731,4 @@ entries:
     urls:
     - https://github.com/bcgov/cas-postgres/releases/download/pg-version-upgrade-0.0.2/pg-version-upgrade-0.0.2.tgz
     version: 0.0.2
-generated: "2025-03-06T20:02:05.591938381Z"
+generated: "2025-03-12T22:50:58.181053083Z"
