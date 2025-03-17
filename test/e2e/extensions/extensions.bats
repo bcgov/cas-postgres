@@ -40,11 +40,11 @@ function _pg_enabled_extension() {
   [ "$output" = "1.3" ]
 }
 
-@test "pgcrypto is not enabled by default" {
+@test "pgcrypto is enabled by default" {
   run _pg_enabled_extension 'pgcrypto'
   echo "${lines[@]}"
   [ "$status" -eq 0 ]
-  [ "$output" = "" ]
+  [ "$output" = "1.3" ]
 }
 
 @test "plpgsql is installed" {
