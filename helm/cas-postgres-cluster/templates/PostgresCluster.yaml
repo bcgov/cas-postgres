@@ -22,6 +22,7 @@ spec:
 {{- if and (index .Values "postgresCluster" "postgres" "image") (index .Values "postgresCluster" "postgres" "tag") }}
   image: {{ .Values.postgresCluster.postgres.image }}:{{ .Values.postgresCluster.postgres.tag }}
 {{- end }}
+  openshift: true
   metadata:
     labels: {{ include "cas-postgres-cluster.labels" . | nindent 6 }}
   postgresVersion: {{ .Values.postgresCluster.postgresVersion }}
