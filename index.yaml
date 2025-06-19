@@ -269,6 +269,23 @@ entries:
   cas-postgres-cluster:
   - apiVersion: v2
     appVersion: 5.3.1
+    created: "2025-06-19T17:13:33.308628666Z"
+    dependencies:
+    - condition: gcsBackups.enable
+      name: terraform-bucket-provision
+      repository: https://bcgov.github.io/cas-pipeline/
+      version: 0.1.4
+    description: A Helm chart to deploy a lightweight version of the crunchy PostgresCluster,
+      meant to run in a small/medium openshift instance of the BC Government. It also
+      configures backups through pgbackrest and a google cloud storage account.
+    digest: eedaf6a7b78ee610fc25a122acae78cab74301d4c0aa414caa164a39a7729537
+    name: cas-postgres-cluster
+    type: application
+    urls:
+    - https://github.com/bcgov/cas-postgres/releases/download/cas-postgres-cluster-1.1.3/cas-postgres-cluster-1.1.3.tgz
+    version: 1.1.3
+  - apiVersion: v2
+    appVersion: 5.3.1
     created: "2025-03-06T20:02:05.472221499Z"
     dependencies:
     - condition: gcsBackups.enable
@@ -731,4 +748,4 @@ entries:
     urls:
     - https://github.com/bcgov/cas-postgres/releases/download/pg-version-upgrade-0.0.2/pg-version-upgrade-0.0.2.tgz
     version: 0.0.2
-generated: "2025-03-12T22:50:58.181053083Z"
+generated: "2025-06-19T17:13:33.308940206Z"
