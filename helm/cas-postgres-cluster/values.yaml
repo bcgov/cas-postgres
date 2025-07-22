@@ -2,7 +2,7 @@
 environment: ~
 
 postgresCluster:
-  postgresVersion: 14
+  postgresVersion: 17
   storageSize: 1Gi
   resources:
     requests:

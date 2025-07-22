@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": ["postgresCluster"],
+  "properties": {
+    "postgresCluster": {
+      "type": "object",
+      "required": ["postgresVersion"],
+      "properties": {
+        "postgresVersion": {
+          "type": "number",
+          "minimum": 17
+        }
+      }
+    }
+  }
+}

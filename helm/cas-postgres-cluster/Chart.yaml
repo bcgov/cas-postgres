@@ -12,7 +12,7 @@ version: 1.2.0
 # Postgres Operator version for which this chart has been built.
 # It will very likely work for later versions, in which case the list of compatible images will change.
 # For the full list of compatible postgres/pgbouncer/pgbackrest versions, see https://access.crunchydata.com/documentation/postgres-operator/latest/references/components
-appVersion: "5.3.1"
+appVersion: "5.7.0"
 
 dependencies:
   - name: terraform-bucket-provision
