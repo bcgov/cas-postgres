@@ -103,23 +103,10 @@ spec:
             incremental: "0 0,4,12,16,20 * * *"
       # this stuff is for the "pgbackrest" container (the only non-init container) in the "obps-postgres-repo-host" pod
       repoHost:
-        resources:
-          requests:
-            cpu: 50m
-            memory: 64Mi
-          limits:
-            cpu: 100m
-            memory: 128Mi
+        resources: {{ toYaml .Values.postgresCluster.repoHost.resources | nindent 10 }}
       sidecars:
         # this stuff is for the "pgbackrest" container in the "obps-postgres-pgha1" set of pods
-        pgbackrest:
-          resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
-            limits:
-              cpu: 100m
-              memory: 128Mi
+        pgbackrest: {{ toYaml .Values.postgresCluster.pgbackrest.resources | nindent 12 }}
       # allows the triggering of manual backups
       manual:
         repoName: repo1
