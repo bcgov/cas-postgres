@@ -13,6 +13,7 @@ postgresCluster:
       memory: 256Mi
 
   wal:
+    separateStorage: false
     storageSize: 1Gi
 
   postgres:
