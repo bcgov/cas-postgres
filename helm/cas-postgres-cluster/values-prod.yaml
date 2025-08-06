@@ -10,3 +10,7 @@ postgres-cluster:
     limits:
       cpu: 600m
       memory: 600Mi
+
+  wal:
+    storageSize: 3Gi
+

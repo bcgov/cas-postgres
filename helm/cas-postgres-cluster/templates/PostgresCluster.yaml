@@ -60,6 +60,12 @@ spec:
                 matchLabels:
                   postgres-operator.crunchydata.com/cluster: {{ template "cas-postgres-cluster.fullname" . }}
                   postgres-operator.crunchydata.com/instance-set: pgha1
+      walVolumeClaimSpec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: {{ .Values.postgresCluster.wal.storageSize }}
   users: {{ toYaml .Values.postgresCluster.users | nindent 4 }}
   backups:
     pgbackrest:

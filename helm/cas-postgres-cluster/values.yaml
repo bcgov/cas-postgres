@@ -12,6 +12,9 @@ postgresCluster:
       cpu: 200m
       memory: 256Mi
 
+  wal:
+    storageSize: 1Gi
+
   postgres:
     replicaCount: 2
   pgbackrest:
