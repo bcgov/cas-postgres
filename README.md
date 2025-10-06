@@ -1,6 +1,7 @@
 # cas-postgres
 
 [![CircleCI](https://circleci.com/gh/bcgov/cas-postgres.svg?style=svg)](https://circleci.com/gh/bcgov/cas-postgres)
+![Lifecycle:Stable](https://img.shields.io/badge/Lifecycle-Stable-97ca00)
 
 This repository contains the [Spilo](https://github.com/zalando/spilo/) + [pgtap](https://pgtap.org/) docker container and helm chart used by the various applications deployed by the CAS team.
 
